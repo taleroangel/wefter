@@ -1,8 +1,7 @@
-use std::{fs, path::PathBuf};
-
 use crate::error::LoomErr;
 use anyhow::{Ok, Result};
 use directories::ProjectDirs;
+use std::{fs, path::PathBuf};
 
 const APP_QUALIFIER: &str = env!("LOOM_PRJ_QUALIFIER");
 const APP_ORGANIZATION: &str = env!("LOOM_PRJ_ORG");

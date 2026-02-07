@@ -17,7 +17,7 @@ pub struct Params {
     #[arg(short = 'd', long, default_value = ".loom")]
     pub local_res_dir: PathBuf,
 
-    /// Kind of project, if not present use 'autodetect'
+    /// Kind of project, if not present use 'autodetect.lua'
     #[arg(short, long)]
     pub kind: Option<String>,
 }

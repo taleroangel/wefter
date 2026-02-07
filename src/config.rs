@@ -1,8 +1,7 @@
+use crate::fs::dir::DirCfg;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::{fs, path::PathBuf};
-
-use crate::fs::DirCfg;
 
 /// Configuration file for Loom.toml
 const CONFIGURATION_FILENAME: &str = "loom.toml";

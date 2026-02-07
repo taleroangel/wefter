@@ -1,5 +1,9 @@
+#![allow(dead_code)]
+#![allow(unused)]
+
 use anyhow::{Ok, Result};
 use clap::Parser;
+use mlua::Lua;
 
 mod cli;
 mod config;
@@ -33,6 +37,13 @@ fn try_main() -> Result<()> {
 
     // Show final directory structure
     log::trace!("{:?}", &dirs);
+
+    // Load resources paths
+    let resources = fs::res::ResourceDir::load(&dirs);
+
+    // Create lua interpreter
+    let lua = Lua::new();
+
     Ok(())
 }
 
