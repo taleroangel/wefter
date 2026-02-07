@@ -1,5 +1,5 @@
-use std::path::PathBuf;
 use clap::Parser;
+use std::path::PathBuf;
 
 /// Input parameters for the program
 #[derive(Debug, Parser)]
@@ -13,11 +13,11 @@ pub struct Params {
     #[arg(long)]
     pub root: Option<String>,
 
-    /// Override configuration file
-    #[arg(long)]
-    pub config: Option<PathBuf>,
+    /// Folder to lookup (project) local configs & templates
+    #[arg(short = 'd', long, default_value = ".loom")]
+    pub local_res_dir: PathBuf,
 
-    /// Kind of project, if not present, use 'autodetect'
+    /// Kind of project, if not present use 'autodetect'
     #[arg(short, long)]
     pub kind: Option<String>,
 }

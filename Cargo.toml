@@ -13,7 +13,10 @@ log = { version = "0.4.29" }
 fern = { version = "0.7.1", features = [ "colored" ] }
 # Parsing command line arguments
 clap = { version = "4.5.57", features = [ "default", "derive" ] }
+# Accessing configuration folder OS-agnostic
+directories = { version = "6.0.0" }
 # Deserializing configuration file
 serde = { version = "1.0.228", features = [ "default", "derive" ] }
+toml = { version = "0.9.11", features = [ "default" ] }
 # Lua runtime for configurations 
 mlua = { version = "0.11.6", features = [ "lua55", "vendored", "anyhow" ] }

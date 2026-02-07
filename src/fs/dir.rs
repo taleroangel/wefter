@@ -1,0 +1,89 @@
+use std::{fs, path::PathBuf};
+
+use crate::error::LoomErr;
+use anyhow::{Ok, Result};
+use directories::ProjectDirs;
+
+const APP_QUALIFIER: &str = env!("LOOM_PRJ_QUALIFIER");
+const APP_ORGANIZATION: &str = env!("LOOM_PRJ_ORG");
+const APP_NAME: &str = env!("LOOM_PRJ_NAME");
+
+/// Directories configuration, contains paths to all the directories
+/// loom requires to load templates
+#[derive(Debug)]
+pub struct DirCfg {
+    /// Current working directory
+    pub wd: PathBuf,
+    /// Directory for app configurations ($HOME/.config/loom)
+    pub cfg: PathBuf,
+    /// Directory for configurations & templates ($HOME/.local/share/loom)
+    pub data: PathBuf,
+    /// Directory for (project) local data directory
+    pub local: Option<PathBuf>,
+}
+
+impl DirCfg {
+    /// Create initial directory configuration
+    pub fn new() -> Result<Self> {
+        // Get project directories (OS-agnostic)
+        let prjdir = ProjectDirs::from(APP_QUALIFIER, APP_ORGANIZATION, APP_NAME)
+            .ok_or(LoomErr::FilesystemError)?;
+
+        Ok(Self {
+            wd: std::env::current_dir()?,
+            cfg: prjdir.config_local_dir().to_path_buf(),
+            data: prjdir.data_local_dir().to_path_buf(),
+            local: None,
+        })
+    }
+
+    /// Create data & config directories if they dont exist
+    pub fn create_if_not_exist(&self) -> Result<()> {
+        // Create config directory
+        if !self.cfg.is_dir() {
+            fs::create_dir_all(&self.cfg)?;
+            log::debug!("Created directory: {:?}", &self.cfg);
+        }
+
+        // Create data directory
+        if !self.data.is_dir() {
+            fs::create_dir_all(&self.data)?;
+            log::debug!("Created directory: {:?}", &self.data);
+        }
+
+        Ok(())
+    }
+
+    /// Change the data directory
+    pub fn update_data_dir(&mut self, newdir: PathBuf) -> Result<()> {
+        // Directory must exist
+        if !newdir.is_dir() {
+            return Err(LoomErr::NoSuchResourceDirectory(newdir).into());
+        }
+
+        self.data = newdir;
+        Ok(())
+    }
+
+    /// Change the local directory, usually provided by cfg
+    pub fn update_local_dir(&mut self, localdir: PathBuf) -> Result<()> {
+        // Check if dir exists
+        if localdir.is_dir() {
+            self.local = Some(localdir);
+            return Ok(());
+        }
+
+        // Doesn't exist, try building local path
+        let mut wd = self.wd.clone();
+        wd.push(localdir);
+
+        // Check if path exists
+        if wd.is_dir() {
+            self.local = Some(wd);
+            return Ok(());
+        }
+
+        // Path doesn't exist
+        Err(LoomErr::NoSuchResourceDirectory(wd).into())
+    }
+}

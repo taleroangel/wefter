@@ -3,7 +3,6 @@ use fern::colors::{Color, ColoredLevelConfig};
 
 /// Setup logging interface
 pub fn setup_logger(verbose: u8) -> Result<()> {
-
     // Create colors for level
     let colors = ColoredLevelConfig::new()
         .error(Color::Red)
@@ -21,7 +20,7 @@ pub fn setup_logger(verbose: u8) -> Result<()> {
                 message
             ));
         })
-        .level(match verbose { 
+        .level(match verbose {
             0 => log::LevelFilter::Warn,
             1 => log::LevelFilter::Info,
             2 => log::LevelFilter::Debug,

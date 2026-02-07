@@ -1,0 +1,4 @@
+[env]
+LOOM_PRJ_NAME = "loom"
+LOOM_PRJ_QUALIFIER = "dev"
+LOOM_PRJ_ORG = "taleroangel"
