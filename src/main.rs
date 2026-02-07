@@ -2,23 +2,33 @@
 #![allow(unused)]
 
 use anyhow::{Ok, Result};
-use clap::Parser;
+use clap::{CommandFactory, Parser};
 use mlua::Lua;
 
 mod cli;
 mod config;
 mod error;
 mod fs;
+mod tui;
 
-/// Wrapper around main to handle error with custom formatting
+/// Wrapper around main to handle errors with custom formatting
 fn try_main() -> Result<()> {
-    // Read command line parameters, setup loggger
-    let params = cli::Params::try_parse()?;
-    cli::log::setup_logger(params.verbose)?;
+    // Initialize TUI
+    let tui = tui::TuiInterface::new();
+
+    // Parse command line arguments
+    let params = cli::Params::parse();
+    if params.help {
+        tui.print_help();
+        return Ok(());
+    }
+
+    // Setup logger
+    cli::setup_logger(params.verbose)?;
     log::trace!("{:?}", &params);
 
     // Setup base directories
-    let mut dirs = fs::dir::DirCfg::new()?;
+    let mut dirs = fs::dirs::DirCfg::new()?;
     dirs.create_if_not_exist()?;
 
     // Read configuration file
@@ -31,7 +41,7 @@ fn try_main() -> Result<()> {
     }
 
     // Change local directory from params (Partial move of params)
-    if dirs.update_local_dir(params.local_res_dir).is_ok() {
+    if dirs.update_local_dir(params.local_resources).is_ok() {
         log::info!("Reading from project directory: {:?}", &dirs.local);
     }
 
@@ -39,7 +49,13 @@ fn try_main() -> Result<()> {
     log::trace!("{:?}", &dirs);
 
     // Load resources paths
-    let resources = fs::res::ResourceDir::load(&dirs);
+    let resources = fs::res::ResourceDir::load(&dirs)?;
+
+    // List resources & end program
+    if params.list {
+        tui.print_resources(&resources, &dirs);
+        return Ok(());
+    }
 
     // Create lua interpreter
     let lua = Lua::new();

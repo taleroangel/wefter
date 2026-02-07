@@ -1,4 +1,4 @@
-use crate::fs::dir::DirCfg;
+use crate::fs::dirs::DirCfg;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::{fs, path::PathBuf};

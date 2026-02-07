@@ -1,4 +1,7 @@
+use std::path::PathBuf;
+
 use anyhow::{Ok, Result};
+use clap::Parser;
 use fern::colors::{Color, ColoredLevelConfig};
 
 /// Setup logging interface
@@ -30,4 +33,33 @@ pub fn setup_logger(verbose: u8) -> Result<()> {
         .apply()?;
 
     Ok(())
+}
+
+/// Input parameters for the program
+#[derive(Debug, Parser)]
+#[command(version, author, disable_help_flag = true)]
+pub struct Params {
+    /// Print Help
+    #[arg(long)]
+    pub help: bool,
+
+    /// Enable Info(v), Debug(vv) or Trace(vvv) messages
+    #[arg(short, long, action = clap::ArgAction::Count)]
+    pub verbose: u8,
+
+    /// Override project root (Current working directory by default)
+    #[arg(long)]
+    pub root: Option<String>,
+
+    /// Folder to lookup for local configs & templates
+    #[arg(short = 'd', long, default_value = ".loom")]
+    pub local_resources: PathBuf,
+
+    /// List available kind resources
+    #[arg(short, long)]
+    pub list: bool,
+
+    /// Kind of project, if not present use 'autodetect.lua'
+    #[arg(short, long)]
+    pub kind: Option<String>,
 }

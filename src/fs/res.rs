@@ -1,4 +1,4 @@
-use super::dir::DirCfg;
+use super::dirs::DirCfg;
 use crate::error::LoomErr;
 use anyhow::{Ok, Result, anyhow};
 use std::collections::hash_map::HashMap;
@@ -7,6 +7,9 @@ use std::path::PathBuf;
 
 /// Name of the lua initial file
 const INIT_LUA_FILE: &str = "init.lua";
+
+/// Name of the autodetect lua call
+const AUTODETECT_LUA_FILE: &str = "autodetect.lua";
 
 /// Name of the templates directory within the kind resource
 const TEMPLATE_FOLDER_DIR: &str = "templates";
@@ -20,9 +23,14 @@ pub struct ResourceDir {
     pub path: PathBuf,
     /// init.lua file in resource
     pub luainit: PathBuf,
+    /// autodetect.lua file in resource
+    pub autodetect: Option<PathBuf>,
     /// Templates directory
     pub templates: PathBuf,
 }
+
+/// ResourceDir asociated by kind
+pub type ResourceDirTable = HashMap<String, ResourceDir>;
 
 impl ResourceDir {
     /// Create a [ResourceDir] given its path
@@ -46,10 +54,13 @@ impl ResourceDir {
             log::debug!("Created template directory: {:?}", &templates);
         }
 
+        // Get autodetect lua if present
+        let mut autodetect = dir.clone();
+        autodetect.push(AUTODETECT_LUA_FILE);
+
         // Get basename
         let kind = String::from(
-            dir
-                .file_name()
+            dir.file_name()
                 .and_then(|os| os.to_str())
                 .ok_or(anyhow!("Cannot cast {:?} into String", &dir))?,
         );
@@ -59,6 +70,12 @@ impl ResourceDir {
             path: dir,
             luainit,
             templates,
+            // Only if autodetect.lua exists
+            autodetect: if autodetect.is_file() {
+                Some(autodetect)
+            } else {
+                None
+            },
         };
 
         // Append resource
@@ -66,7 +83,7 @@ impl ResourceDir {
     }
 
     /// Load all the [ResourceDir] paths, key is `kind`
-    pub fn load(dirs: &DirCfg) -> Result<HashMap<String, ResourceDir>> {
+    pub fn load(dirs: &DirCfg) -> Result<ResourceDirTable> {
         // Build the result map
         let mut resources = HashMap::new();
 
