@@ -10,7 +10,7 @@ use termimad::{
     minimad::{OwningTemplateExpander, TextTemplate},
 };
 
-/// Templat for the help description
+/// Template for the help description
 const HELP_TEMPLATE_MD: &str = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/static/help.md"));
 
 /// Template for showing resources
@@ -75,7 +75,7 @@ impl TuiInterface {
             // Push data to row template
             mdexpander
                 .sub("resource-rows")
-                .set("resource-kind", &k)
+                .set("resource-profile", &k)
                 .set("resource-path", format!("{:?}", &v.path))
                 .set_md(
                     "resource-autodetect",

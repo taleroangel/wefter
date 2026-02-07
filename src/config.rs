@@ -9,7 +9,7 @@ const CONFIGURATION_FILENAME: &str = "loom.toml";
 /// Main application configuration struct
 #[derive(Debug, Deserialize, Serialize)]
 pub struct CfgFile {
-    /// Directory where resources (configurations & templates) live
+    /// Directory where profile resources live
     pub data_dir: Option<PathBuf>,
 }
 

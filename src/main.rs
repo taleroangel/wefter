@@ -13,7 +13,6 @@ mod tui;
 
 /// Wrapper around main to handle errors with custom formatting
 fn try_main() -> Result<()> {
-    // Initialize TUI
     let tui = tui::TuiInterface::new();
 
     // Parse command line arguments
@@ -31,16 +30,21 @@ fn try_main() -> Result<()> {
     let mut dirs = fs::dirs::DirCfg::new()?;
     dirs.create_if_not_exist()?;
 
+    // Override cwd (Partial move of params)
+    if let Some(wd) = params.root {
+        dirs.update_working_dir(wd)?;
+    }
+
     // Read configuration file
     let cfg = config::CfgFile::read(&dirs)?;
     log::trace!("{:?}", &cfg);
 
-    // Change data directory from config (Partial move of config)
+    // Override data directory from config (Partial move of config)
     if let Some(dir) = cfg.data_dir {
         dirs.update_data_dir(dir)?;
     }
 
-    // Change local directory from params (Partial move of params)
+    // Override local resources directory
     if dirs.update_local_dir(params.local_resources).is_ok() {
         log::info!("Reading from project directory: {:?}", &dirs.local);
     }

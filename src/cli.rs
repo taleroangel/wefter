@@ -1,8 +1,7 @@
-use std::path::PathBuf;
-
 use anyhow::{Ok, Result};
 use clap::Parser;
 use fern::colors::{Color, ColoredLevelConfig};
+use std::path::PathBuf;
 
 /// Setup logging interface
 pub fn setup_logger(verbose: u8) -> Result<()> {
@@ -49,17 +48,17 @@ pub struct Params {
 
     /// Override project root (Current working directory by default)
     #[arg(long)]
-    pub root: Option<String>,
+    pub root: Option<PathBuf>,
 
-    /// Folder to lookup for local configs & templates
+    /// Folder to lookup for local profiles
     #[arg(short = 'd', long, default_value = ".loom")]
     pub local_resources: PathBuf,
 
-    /// List available kind resources
+    /// List available profiles (profiles are read from resource directories)
     #[arg(short, long)]
     pub list: bool,
 
-    /// Kind of project, if not present use 'autodetect.lua'
+    /// Profile to use, if not present use 'autodetect.lua'
     #[arg(short, long)]
-    pub kind: Option<String>,
+    pub profile: Option<String>,
 }

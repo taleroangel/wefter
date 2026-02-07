@@ -53,9 +53,18 @@ impl DirCfg {
         Ok(())
     }
 
+    /// Update current working directory location
+    pub fn update_working_dir(&mut self, newdir: PathBuf) -> Result<()> {
+        if !newdir.is_file() {
+            return Err(LoomErr::BadRootDirectory(newdir).into());
+        }
+
+        self.wd = newdir;
+        Ok(())
+    }
+
     /// Change the data directory
     pub fn update_data_dir(&mut self, newdir: PathBuf) -> Result<()> {
-        // Directory must exist
         if !newdir.is_dir() {
             return Err(LoomErr::NoSuchResourceDirectory(newdir).into());
         }
@@ -65,18 +74,18 @@ impl DirCfg {
     }
 
     /// Change the local directory, usually provided by cfg
-    pub fn update_local_dir(&mut self, localdir: PathBuf) -> Result<()> {
-        // Check if dir exists
-        if localdir.is_dir() {
-            self.local = Some(localdir);
+    pub fn update_local_dir(&mut self, newdir: PathBuf) -> Result<()> {
+        // Check absolute path
+        if newdir.is_dir() {
+            self.local = Some(newdir);
             return Ok(());
         }
 
-        // Doesn't exist, try building local path
+        // Build relative path (from cwd)
         let mut wd = self.wd.clone();
-        wd.push(localdir);
+        wd.push(newdir);
 
-        // Check if path exists
+        // Check relative path
         if wd.is_dir() {
             self.local = Some(wd);
             return Ok(());

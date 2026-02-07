@@ -1,11 +1,11 @@
 ## List of available resources
-Resources are gathered based on current sources:
-**System source:** ${system-source}
-**Local source: ** ${local-source}
+Profiles are loaded based on current sources:
+**System resources:** ${system-source}
+**Local resources: ** ${local-source}
 |:-:|:-:|-
-|**kind**| **path**|**autodetect**|
+|**profile**| **path**|**autodetect**|
 |-:|:-:|-
 ${resource-rows
-|${resource-kind}|${resource-path}|${resource-autodetect}
+|${resource-profile}|${resource-path}|${resource-autodetect}
 }
 |-
