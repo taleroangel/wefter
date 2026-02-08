@@ -17,4 +17,13 @@ pub enum LoomErr {
 
     #[error("Unknown profile {0}, no matching resources found")]
     UnknownProfile(String),
+
+    #[error("No available profiles, download some with [--get]")]
+    NoAvailableProfiles,
+
+    #[error("Lua file {0:?} does not exist")]
+    NoSuchLuaFile(PathBuf),
+
+    #[error("No profile was specified and autodetect returned no coincidences")]
+    NoProfileSpecified,
 }
