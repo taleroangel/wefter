@@ -3,10 +3,10 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::{fs, path::PathBuf};
 
-/// Configuration file for Loom.toml
+/// Configuration filename
 const CONFIGURATION_FILENAME: &str = "loom.toml";
 
-/// Main application configuration struct
+/// App configuration file structure
 #[derive(Debug, Deserialize, Serialize)]
 pub struct CfgFile {
     /// Directory where profile resources live

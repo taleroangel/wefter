@@ -2,6 +2,7 @@ use crate::{
     cli::Params,
     fs::{dirs::DirCfg, res::ResourceDirTable},
 };
+use anyhow::{Ok, Result};
 use clap::CommandFactory;
 use clap_help::Printer;
 use termimad::{
@@ -11,7 +12,10 @@ use termimad::{
 };
 
 /// Template for the help description
-const HELP_TEMPLATE_MD: &str = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/static/help.md"));
+const HELP_TEMPLATE_MD: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/static/help.md"
+));
 
 /// Template for showing resources
 const RESOURCE_LIST_TEMPLATE_MD: &str = include_str!(concat!(
@@ -19,9 +23,8 @@ const RESOURCE_LIST_TEMPLATE_MD: &str = include_str!(concat!(
     "/static/resource_list_template.md"
 ));
 
-/// Interface for accessing Tui
+/// Interface for manipulating the TUI
 pub struct TuiInterface {
-    /// Termimad skin
     skin: MadSkin,
 }
 
@@ -89,5 +92,10 @@ impl TuiInterface {
 
         // Print table
         self.skin.print_owning_expander(&mdexpander, &mdtemplate);
+    }
+
+    /// Prompt user for a profile
+    pub fn select_profile(&self, profiles: &Vec<String>) -> Result<String> {
+        Ok(inquire::Select::new("Select a profile", profiles.clone()).prompt()?)
     }
 }

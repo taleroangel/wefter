@@ -11,8 +11,8 @@ const APP_NAME: &str = env!("LOOM_PRJ_NAME");
 /// loom requires to load templates
 #[derive(Debug)]
 pub struct DirCfg {
-    /// Current working directory
-    pub wd: PathBuf,
+    /// Project working directory
+    pub root: PathBuf,
     /// Directory for app configurations ($HOME/.config/loom)
     pub cfg: PathBuf,
     /// Directory for configurations & templates ($HOME/.local/share/loom)
@@ -29,7 +29,7 @@ impl DirCfg {
             .ok_or(LoomErr::FilesystemError)?;
 
         Ok(Self {
-            wd: std::env::current_dir()?,
+            root: std::env::current_dir()?,
             cfg: prjdir.config_local_dir().to_path_buf(),
             data: prjdir.data_local_dir().to_path_buf(),
             local: None,
@@ -59,7 +59,7 @@ impl DirCfg {
             return Err(LoomErr::BadRootDirectory(newdir).into());
         }
 
-        self.wd = newdir;
+        self.root = newdir;
         Ok(())
     }
 
@@ -82,7 +82,7 @@ impl DirCfg {
         }
 
         // Build relative path (from cwd)
-        let mut wd = self.wd.clone();
+        let mut wd = self.root.clone();
         wd.push(newdir);
 
         // Check relative path

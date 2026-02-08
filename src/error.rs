@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 use thiserror::Error;
 
+/// Loom-specific errors
 #[derive(Debug, Error)]
 pub enum LoomErr {
     #[error("Cannot find system directories ($HOME/.config and $HOME/.local/share)")]

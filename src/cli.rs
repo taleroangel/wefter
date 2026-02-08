@@ -36,7 +36,7 @@ pub fn setup_logger(verbose: u8) -> Result<()> {
 
 /// Input parameters for the program
 #[derive(Debug, Parser)]
-#[command(version, author, disable_help_flag = true)]
+#[command(version, author, disable_help_flag = true, trailing_var_arg = true)]
 pub struct Params {
     /// Print Help
     #[arg(long)]
@@ -61,4 +61,7 @@ pub struct Params {
     /// Profile to use, if not present use 'autodetect.lua'
     #[arg(short, long)]
     pub profile: Option<String>,
+
+    /// Trailing parameters, this ones are sent to the profile configuration
+    pub trailing: Vec<String>,
 }

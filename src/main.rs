@@ -1,9 +1,6 @@
-#![allow(dead_code)]
-#![allow(unused)]
-
 use crate::{error::LoomErr, fs::res::ResourceDir};
 use anyhow::{Ok, Result};
-use clap::{CommandFactory, Parser};
+use clap::Parser;
 
 mod cli;
 mod config;
@@ -14,12 +11,12 @@ mod tui;
 
 /// Wrapper around main to handle errors with custom formatting
 fn try_main() -> Result<()> {
-    let tui = tui::TuiInterface::new();
+    let ui = tui::TuiInterface::new();
 
     // Parse command line arguments
     let params = cli::Params::parse();
     if params.help {
-        tui.print_help();
+        ui.print_help();
         return Ok(());
     }
 
@@ -64,12 +61,12 @@ fn try_main() -> Result<()> {
 
     // List resources & end program
     if params.list {
-        tui.print_resources(&resources, &dirs);
+        ui.print_resources(&resources, &dirs);
         return Ok(());
     }
 
     // Create lua interpreter
-    let mut lua = engine::LuaEngine::new();
+    let mut lua = engine::LuaInterpreter::new(&dirs)?;
 
     // Get the profile directory
     let profile: (&String, &ResourceDir) = if let Some(key) = &params.profile {
@@ -83,7 +80,9 @@ fn try_main() -> Result<()> {
         log::trace!("Valid autodetect profiles: {:?}", &autodetect);
 
         match autodetect.len() {
+            // Show error
             0 => Result::Err(LoomErr::NoProfileSpecified.into()),
+            // Use the only entry available
             1 => autodetect
                 .first()
                 // Error for when no items are available
@@ -95,11 +94,18 @@ fn try_main() -> Result<()> {
                         .ok_or_else(|| LoomErr::UnknownProfile(k.clone()))
                 })
                 .flatten(),
-            1.. => todo!("make user select from list"),
+            // Prompt use to choose
+            1.. => ui.select_profile(&autodetect).map(|key| {
+                resources
+                    .get_key_value(&key)
+                    .ok_or_else(|| LoomErr::UnknownProfile(key))
+            })?,
         }
     }?;
 
     log::debug!("Using profile: {:?}", &profile);
+
+    // Delegate to engine
 
     Ok(())
 }
