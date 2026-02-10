@@ -1,4 +1,5 @@
 use super::api;
+use super::def;
 use crate::{
     error::LoomErr,
     fs::{
@@ -36,18 +37,24 @@ impl LuaInterpreter {
         let searchers: mlua::Table = package.get("searchers")?;
 
         let loader = self.interpreter.create_function(move |lua, name: String| {
-            let mut path = path.clone();
-            let name = name.replace(".", "/") + ".lua";
-            path.push(&name);
+            // Module as a lua file (foo.lua)
+            let mut file = path.clone();
+            let filename = name.replace(".", "/") + ".lua";
+            file.push(filename);
 
-            if !path.is_file() {
+            // Module as directory init.lua (foo/init.lua)
+            let mut dir = path.clone();
+            let dirname = name.replace(".", "/") + "/init.lua";
+            dir.push(dirname);
+
+            if !file.is_file() || !dir.is_file() {
                 return Result::Err(mlua::Error::runtime(format!(
-                    "Could not find module {:?}",
-                    path
+                    "Could not find module entrypoint {:?}, {:?}",
+                    file, dir
                 )));
             }
 
-            let source = fs::read_to_string(path)?;
+            let source = fs::read_to_string(if file.is_file() { file } else { dir })?;
             let module = lua.load(source).set_name(name).into_function()?;
 
             Result::Ok(mlua::Value::Function(module))
@@ -97,7 +104,7 @@ impl LuaInterpreter {
     }
 
     /// Run a configuration file
-    pub fn run_init(&mut self, params: Vec<String>, res: &ResourceDir) -> Result<()> {
+    pub fn run_init(&mut self, res: &ResourceDir) -> Result<def::ProfileDef> {
         // Check if file exists
         if !res.init.is_file() {
             return Err(LoomErr::NoSuchLuaFile(res.init.clone()).into());
@@ -106,8 +113,7 @@ impl LuaInterpreter {
         // Register the loader for init.lua parent directory
         self.register_loader(res)?;
 
-        let result = self.exec::<String>(&res.init)?;
-
-        Ok(())
+        // Get definition from init.lua
+        Ok(self.exec::<def::ProfileDef>(&res.init)?)
     }
 }

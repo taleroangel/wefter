@@ -106,7 +106,7 @@ fn try_main() -> Result<()> {
     log::debug!("Using profile: {:?}", &profile);
 
     // Load configuration from engine
-    let configuration = lua.run_init(params.trailing, profile.1)?;
+    let configuration = lua.run_init(profile.1)?;
     log::trace!("{:?}", configuration);
 
     Ok(())

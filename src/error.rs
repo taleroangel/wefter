@@ -27,4 +27,7 @@ pub enum LoomErr {
 
     #[error("No profile was specified and auto returned no coincidences")]
     NoProfileSpecified,
+
+    #[error("Failed to parse profile definition, bad structure")]
+    BadProfileDefinition,
 }
