@@ -1,7 +1,7 @@
 use crate::error::LoomErr;
 use anyhow::{Ok, Result};
 use directories::ProjectDirs;
-use std::{fs, path::PathBuf};
+use std::{env, fs, path::PathBuf};
 
 const APP_QUALIFIER: &str = env!("LOOM_PRJ_QUALIFIER");
 const APP_ORGANIZATION: &str = env!("LOOM_PRJ_ORG");
@@ -59,6 +59,7 @@ impl DirCfg {
             return Err(LoomErr::BadRootDirectory(newdir).into());
         }
 
+        env::set_current_dir(&newdir)?;
         self.root = newdir;
         Ok(())
     }

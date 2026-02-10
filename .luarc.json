@@ -1,0 +1,4 @@
+{
+    "workspace.library": ["./loom.d.lua"],
+    "diagnostics.globals": ["loom", "LOOM_VERSION", "LOOM_PROJECT_ROOT"]
+}

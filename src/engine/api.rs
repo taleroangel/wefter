@@ -1,10 +1,9 @@
-use anyhow::{Ok, Result, anyhow};
+use anyhow::{Ok, Result};
 use mlua::{Function, Lua};
-
-use crate::fs::dirs::DirCfg;
+use std::path::PathBuf;
 
 /// Type of the Loom api table
-pub type LoomTable<'a> = Vec<(&'a str, Function)>;
+pub type LoomModuleTable<'a> = Vec<(&'a str, Function)>;
 
 /// Name for the Loom api
 pub const LUA_LOOM_TABLE_NAME: &str = "loom";
@@ -15,19 +14,10 @@ pub const LUA_LOOM_VERSION: (&str, &str) = ("LOOM_VERSION", env!("CARGO_PKG_VERS
 /// Name for a constant that contains the absolute path to the project root
 pub const LUA_LOOM_PROJECT_ROOT: &str = "LOOM_PROJECT_ROOT";
 
-/// Append function `get_project_root` to [LoomTable]
-pub fn register_get_project_root(l: &Lua, api: &mut LoomTable, dirs: &DirCfg) -> Result<()> {
-    let project_root = dirs
-        .root
-        .clone()
-        .into_os_string()
-        .into_string()
-        .map_err(|_| anyhow!("Failed conversion from OsString into String"))?;
-
-    api.push((
-        "get_project_root",
-        l.create_function(move |_, ()| Result::Ok(project_root.clone()))?,
-    ));
-
-    Ok(())
+/// Create a table with the 'fs' submodule
+pub fn fs_module(l: &Lua) -> Result<LoomModuleTable> {
+    Ok(vec![(
+        "is_file",
+        l.create_function(move |_, path: PathBuf| Result::Ok(path.is_file()))?,
+    )])
 }

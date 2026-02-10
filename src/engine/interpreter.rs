@@ -31,15 +31,23 @@ impl LuaInterpreter {
 
 // Public
 impl LuaInterpreter {
-    /// Create an instance of the interpreter
+    /// Create an instance of the interpreter and register the Loom API module
     pub fn new(dirs: &DirCfg) -> Result<Self> {
-        let interpreter = Lua::new();
-        let globals = interpreter.globals();
+        let l = Lua::new();
+        let globals = l.globals();
 
+        // Set global variables
         globals.set(api::LUA_LOOM_VERSION.0, api::LUA_LOOM_VERSION.1)?;
         globals.set(api::LUA_LOOM_PROJECT_ROOT, dirs.root.clone())?;
 
-        Ok(Self { interpreter })
+        // Register all APIs
+        let fs = l.create_table_from(api::fs_module(&l)?)?;
+
+        // Create global api and register it
+        let loom = l.create_table_from(vec![("fs", fs)])?;
+        l.globals().set(api::LUA_LOOM_TABLE_NAME, loom)?;
+
+        Ok(Self { interpreter: l })
     }
 
     /// Run all the registered autodetect functions to tell which profiles
@@ -60,29 +68,11 @@ impl LuaInterpreter {
     }
 
     /// Run a configuration file
-    pub fn run_init(
-        &mut self,
-        params: Vec<String>,
-        res: &ResourceDir,
-        dirs: &DirCfg,
-    ) -> Result<()> {
+    pub fn run_init(&mut self, params: Vec<String>, res: &ResourceDir) -> Result<()> {
         // Check if file exists
         if !res.luainit.is_file() {
             return Err(LoomErr::NoSuchLuaFile(res.luainit.clone()).into());
         }
-
-        // In this table, all APi functions are registered
-        let mut table = api::LoomTable::new();
-
-        // Reference to the interpreter just for simplicity
-        let l = &mut self.interpreter;
-
-        // Register all functions
-        api::register_get_project_root(&l, &mut table, &dirs)?;
-
-        // Build and insert the API as a table
-        let loom = l.create_table_from(table)?;
-        l.globals().set(api::LUA_LOOM_TABLE_NAME, loom)?;
 
         Ok(())
     }
