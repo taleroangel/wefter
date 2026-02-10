@@ -58,7 +58,7 @@ pub struct Params {
     #[arg(short, long)]
     pub list: bool,
 
-    /// Profile to use, if not present use 'autodetect.lua'
+    /// Profile to use, if not present use 'auto.lua'
     #[arg(short, long)]
     pub profile: Option<String>,
 

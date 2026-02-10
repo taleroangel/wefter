@@ -8,8 +8,8 @@ use std::path::PathBuf;
 /// Name of the profile lua initial file
 const INIT_LUA_FILE: &str = "init.lua";
 
-/// Name of the autodetect lua function
-const AUTODETECT_LUA_FILE: &str = "autodetect.lua";
+/// Name of the auto lua function
+const AUTO_LUA_FILE: &str = "auto.lua";
 
 /// Name of the templates directory within the profile directory
 const TEMPLATE_FOLDER_DIR: &str = "templates";
@@ -22,9 +22,9 @@ pub struct ResourceDir {
     /// Path to the profile directory
     pub path: PathBuf,
     /// init.lua file in resource
-    pub luainit: PathBuf,
-    /// autodetect.lua file in resource
-    pub autodetect: Option<PathBuf>,
+    pub init: PathBuf,
+    /// auto.lua file in resource
+    pub auto: Option<PathBuf>,
     /// Templates directory
     pub templates: PathBuf,
 }
@@ -54,9 +54,9 @@ impl ResourceDir {
             log::debug!("Created template directory: {:?}", &templates);
         }
 
-        // Get autodetect lua if present
-        let mut autodetect = dir.clone();
-        autodetect.push(AUTODETECT_LUA_FILE);
+        // Get auto lua if present
+        let mut auto = dir.clone();
+        auto.push(AUTO_LUA_FILE);
 
         // Get basename
         let profile = String::from(
@@ -68,14 +68,10 @@ impl ResourceDir {
         // Build the item
         let item = Self {
             path: dir,
-            luainit,
+            init: luainit,
             templates,
-            // Only if autodetect.lua exists
-            autodetect: if autodetect.is_file() {
-                Some(autodetect)
-            } else {
-                None
-            },
+            // Only if auto.lua exists
+            auto: if auto.is_file() { Some(auto) } else { None },
         };
 
         // Append resource

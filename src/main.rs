@@ -75,15 +75,15 @@ fn try_main() -> Result<()> {
             .get_key_value(key)
             .ok_or_else(|| LoomErr::UnknownProfile(key.clone()))
     } else {
-        // Uset autodetect.lua
-        let autodetect = lua.run_autodetect(&resources)?;
-        log::trace!("Valid autodetect profiles: {:?}", &autodetect);
+        // Uset auto.lua
+        let auto = lua.run_auto(&resources)?;
+        log::trace!("Valid auto profiles: {:?}", &auto);
 
-        match autodetect.len() {
+        match auto.len() {
             // Show error
             0 => Result::Err(LoomErr::NoProfileSpecified.into()),
             // Use the only entry available
-            1 => autodetect
+            1 => auto
                 .first()
                 // Error for when no items are available
                 .ok_or_else(|| LoomErr::NoAvailableProfiles)
@@ -95,7 +95,7 @@ fn try_main() -> Result<()> {
                 })
                 .flatten(),
             // Prompt use to choose
-            1.. => ui.select_profile(&autodetect).map(|key| {
+            1.. => ui.select_profile(&auto).map(|key| {
                 resources
                     .get_key_value(&key)
                     .ok_or_else(|| LoomErr::UnknownProfile(key))
@@ -105,7 +105,9 @@ fn try_main() -> Result<()> {
 
     log::debug!("Using profile: {:?}", &profile);
 
-    // Delegate to engine
+    // Load configuration from engine
+    let configuration = lua.run_init(params.trailing, profile.1)?;
+    log::trace!("{:?}", configuration);
 
     Ok(())
 }

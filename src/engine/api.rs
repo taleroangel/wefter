@@ -15,9 +15,15 @@ pub const LUA_LOOM_VERSION: (&str, &str) = ("LOOM_VERSION", env!("CARGO_PKG_VERS
 pub const LUA_LOOM_PROJECT_ROOT: &str = "LOOM_PROJECT_ROOT";
 
 /// Create a table with the 'fs' submodule
-pub fn fs_module(l: &Lua) -> Result<LoomModuleTable> {
-    Ok(vec![(
-        "is_file",
-        l.create_function(move |_, path: PathBuf| Result::Ok(path.is_file()))?,
-    )])
+pub fn fs_module(l: &Lua) -> Result<LoomModuleTable<'_>> {
+    Ok(vec![
+        (
+            "is_file",
+            l.create_function(move |_, path: PathBuf| Result::Ok(path.is_file()))?,
+        ),
+        (
+            "is_dir",
+            l.create_function(move |_, path: PathBuf| Result::Ok(path.is_dir()))?,
+        ),
+    ])
 }

@@ -25,6 +25,6 @@ pub enum LoomErr {
     #[error("Lua file {0:?} does not exist")]
     NoSuchLuaFile(PathBuf),
 
-    #[error("No profile was specified and autodetect returned no coincidences")]
+    #[error("No profile was specified and auto returned no coincidences")]
     NoProfileSpecified,
 }

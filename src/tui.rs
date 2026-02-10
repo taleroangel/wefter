@@ -81,8 +81,8 @@ impl TuiInterface {
                 .set("resource-profile", &k)
                 .set("resource-path", format!("{:?}", &v.path))
                 .set_md(
-                    "resource-autodetect",
-                    if v.autodetect.is_some() {
+                    "resource-auto",
+                    if v.auto.is_some() {
                         "**✓**"
                     } else {
                         "*✗*"

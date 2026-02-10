@@ -27,6 +27,35 @@ impl LuaInterpreter {
         let result = chunk.call::<T>(())?;
         Ok(result)
     }
+
+    /// Register loader for the init.lua source directory
+    fn register_loader(&mut self, profile: &ResourceDir) -> Result<()> {
+        let path = profile.path.clone();
+        let globals = self.interpreter.globals();
+        let package: mlua::Table = globals.get("package")?;
+        let searchers: mlua::Table = package.get("searchers")?;
+
+        let loader = self.interpreter.create_function(move |lua, name: String| {
+            let mut path = path.clone();
+            let name = name.replace(".", "/") + ".lua";
+            path.push(&name);
+
+            if !path.is_file() {
+                return Result::Err(mlua::Error::runtime(format!(
+                    "Could not find module {:?}",
+                    path
+                )));
+            }
+
+            let source = fs::read_to_string(path)?;
+            let module = lua.load(source).set_name(name).into_function()?;
+
+            Result::Ok(mlua::Value::Function(module))
+        })?;
+
+        searchers.raw_insert(1, loader)?;
+        Ok(())
+    }
 }
 
 // Public
@@ -50,13 +79,13 @@ impl LuaInterpreter {
         Ok(Self { interpreter: l })
     }
 
-    /// Run all the registered autodetect functions to tell which profiles
+    /// Run all the registered auto functions to tell which profiles
     /// can be activated, returns profiles keys
-    pub fn run_autodetect(&mut self, res: &ResourceDirTable) -> Result<Vec<String>> {
+    pub fn run_auto(&mut self, res: &ResourceDirTable) -> Result<Vec<String>> {
         res.iter()
-            // Get only ones with 'autodetect', keep only the path
-            .filter_map(|(k, v)| v.autodetect.clone().map(|e| (k.clone(), e)))
-            // Execute each autodetect.lua file
+            // Get only ones with 'auto', keep only the path
+            .filter_map(|(k, v)| v.auto.clone().map(|e| (k.clone(), e)))
+            // Execute each auto.lua file
             .map(|(k, p)| (k, self.exec::<bool>(&p)))
             // Iter<K, Result<R, Err>> -> Iter<Result<(K, R), Err>>
             .filter_map(|(k, r)| match r {
@@ -70,9 +99,14 @@ impl LuaInterpreter {
     /// Run a configuration file
     pub fn run_init(&mut self, params: Vec<String>, res: &ResourceDir) -> Result<()> {
         // Check if file exists
-        if !res.luainit.is_file() {
-            return Err(LoomErr::NoSuchLuaFile(res.luainit.clone()).into());
+        if !res.init.is_file() {
+            return Err(LoomErr::NoSuchLuaFile(res.init.clone()).into());
         }
+
+        // Register the loader for init.lua parent directory
+        self.register_loader(res)?;
+
+        let result = self.exec::<String>(&res.init)?;
 
         Ok(())
     }
