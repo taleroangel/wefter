@@ -1,6 +1,6 @@
 use super::dirs::DirCfg;
 use crate::error::LoomErr;
-use anyhow::{Ok, Result, anyhow};
+use anyhow::{Result, anyhow};
 use std::collections::hash_map::HashMap;
 use std::fs;
 use std::path::PathBuf;

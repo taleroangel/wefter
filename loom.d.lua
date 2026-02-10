@@ -42,3 +42,25 @@ function loom.fs.is_dir(path) end
 --- @return boolean
 ---     `true` if the path exists and is a file, `false` otherwise.
 function loom.fs.is_file(path) end
+
+--- Read a file and get its content as a string.
+---
+--- @param path string
+---     Absolute or relative (to project root) filesystem path.
+---
+--- @return string|nil
+---     File contents as string.
+--- @return string|nil
+---     IO Error, file does not exist?.
+function loom.fs.read_to_string(path) end
+
+--- Get a list of all items within a directory.
+---
+--- @param path string
+---     Absolute or relative (to project root) path to directory.
+---
+--- @return table|nil
+---     Array with paths to items in directory.
+--- @return string|nil
+---     IO Error, directory does not exist?.
+function loom.fs.read_dir(path) end

@@ -2,7 +2,7 @@ use crate::{
     cli::Params,
     fs::{dirs::DirCfg, res::ResourceDirTable},
 };
-use anyhow::{Ok, Result};
+use anyhow::Result;
 use clap::CommandFactory;
 use clap_help::Printer;
 use termimad::{

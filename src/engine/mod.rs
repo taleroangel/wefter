@@ -2,7 +2,8 @@
 mod api;
 
 /// Module with the profile definition
-pub mod def;
+mod def;
+pub use def::ProfileDef;
 
 /// Module that contains Lua state
 mod interpreter;

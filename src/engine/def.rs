@@ -1,9 +1,9 @@
 use crate::error::LoomErr;
-use mlua::*;
+use mlua::{Error, FromLua, Function, Lua, Result, Table, Value};
 use std::collections::HashMap;
 
 /// Map with command name and its definition
-type CommandMap = HashMap<String, CommandDef>;
+pub type CommandMap = HashMap<String, CommandDef>;
 
 /// Command structure inside init.lua file
 #[derive(Debug)]
@@ -13,6 +13,14 @@ pub struct CommandDef {
 
     /// Execute command function
     pub exec: Option<Function>,
+}
+
+impl CommandDef {
+    /// Get a list of subcommands as [String]
+    pub fn get_subcommands(&self) -> Option<Vec<String>> {
+        let subcommand = self.subcommand.as_ref()?;
+        Some(subcommand.keys().cloned().collect())
+    }
 }
 
 impl FromLua for CommandDef {
@@ -49,7 +57,7 @@ impl FromLua for CommandDef {
 
 /// Profile structure returned by init.lua
 #[derive(Debug)]
-pub struct ProfileDef(CommandMap);
+pub struct ProfileDef(pub CommandMap);
 
 impl FromLua for ProfileDef {
     fn from_lua(value: Value, lua: &Lua) -> Result<Self> {

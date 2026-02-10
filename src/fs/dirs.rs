@@ -1,5 +1,5 @@
 use crate::error::LoomErr;
-use anyhow::{Ok, Result};
+use anyhow::Result;
 use directories::ProjectDirs;
 use std::{env, fs, path::PathBuf};
 
@@ -55,7 +55,7 @@ impl DirCfg {
 
     /// Update current working directory location
     pub fn update_working_dir(&mut self, newdir: PathBuf) -> Result<()> {
-        if !newdir.is_file() {
+        if !newdir.is_dir() {
             return Err(LoomErr::BadRootDirectory(newdir).into());
         }
 

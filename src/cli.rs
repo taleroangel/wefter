@@ -1,4 +1,4 @@
-use anyhow::{Ok, Result};
+use anyhow::Result;
 use clap::Parser;
 use fern::colors::{Color, ColoredLevelConfig};
 use std::path::PathBuf;

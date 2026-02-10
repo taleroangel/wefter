@@ -19,7 +19,7 @@ pub enum LoomErr {
     #[error("Unknown profile {0}, no matching resources found")]
     UnknownProfile(String),
 
-    #[error("No available profiles, download some with [--get]")]
+    #[error("No available profiles")]
     NoAvailableProfiles,
 
     #[error("Lua file {0:?} does not exist")]
@@ -30,4 +30,19 @@ pub enum LoomErr {
 
     #[error("Failed to parse profile definition, bad structure")]
     BadProfileDefinition,
+
+    #[error("In (lua) file {0:?}")]
+    BadLuaExec(PathBuf, #[source] mlua::Error),
+
+    #[error("Expected one of the following commands {0:?}")]
+    EmptyParameters(Vec<String>),
+
+    #[error("Bad profile parameters. Command `{0}` is not defined")]
+    CommandNotFound(String),
+
+    #[error("Command `{0}` expected one of the following subcommands {1:?}")]
+    MissingSubcommand(String, Vec<String>),
+
+    #[error("No such subcommand `{subcommand}`, for command `{command}`")]
+    SubcommandNotFound { command: String, subcommand: String },
 }

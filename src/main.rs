@@ -1,5 +1,5 @@
 use crate::{error::LoomErr, fs::res::ResourceDir};
-use anyhow::{Ok, Result};
+use anyhow::Result;
 use clap::Parser;
 
 mod cli;
@@ -107,7 +107,11 @@ fn try_main() -> Result<()> {
 
     // Load configuration from engine
     let configuration = lua.run_init(profile.1)?;
+    log::info!("Successfully loaded configuration for profile: {:?}", profile.0);
     log::trace!("{:?}", configuration);
+
+    // Execute command
+    lua.exec_command(params.trailing, configuration)?;
 
     Ok(())
 }

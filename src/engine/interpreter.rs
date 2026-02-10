@@ -1,5 +1,7 @@
 use super::api;
 use super::def;
+use crate::engine::def::CommandMap;
+use crate::engine::def::ProfileDef;
 use crate::{
     error::LoomErr,
     fs::{
@@ -7,7 +9,7 @@ use crate::{
         res::{ResourceDir, ResourceDirTable},
     },
 };
-use anyhow::{Ok, Result};
+use anyhow::Result;
 use mlua::{FromLua, Lua};
 use std::{fs, path::PathBuf};
 
@@ -25,7 +27,9 @@ impl LuaInterpreter {
         }
         let file = fs::read_to_string(&path)?;
         let chunk = self.interpreter.load(file);
-        let result = chunk.call::<T>(())?;
+        let result = chunk
+            .call::<T>(())
+            .map_err(|e| LoomErr::BadLuaExec(path.clone(), e))?;
         Ok(result)
     }
 
@@ -115,5 +119,58 @@ impl LuaInterpreter {
 
         // Get definition from init.lua
         Ok(self.exec::<def::ProfileDef>(&res.init)?)
+    }
+
+    /// Execute a command given a profile definition
+    pub fn exec_command(&self, params: Vec<String>, def: ProfileDef) -> Result<()> {
+        if params.is_empty() {
+            // Get all commands as a list
+            return Err(LoomErr::EmptyParameters(def.0.keys().cloned().collect()).into());
+        }
+
+        // Reference to the current command definition
+        let mut cm: &CommandMap = &def.0;
+
+        // For each command
+        for (i, cmd) in params.iter().enumerate() {
+            // Get command definition
+            let def = cm
+                .get(cmd)
+                .ok_or_else(|| LoomErr::CommandNotFound(cmd.clone()))?;
+
+            // Call only the last command, previous commands are subcommands
+            let is_last = (i + 1) == params.len();
+            if is_last {
+                let exec = def.exec.clone().ok_or_else(|| {
+                    LoomErr::MissingSubcommand(
+                        cmd.clone(),
+                        // During command parsing we make sure either exec or subcommand
+                        // exists, so subcommand must exist
+                        def.get_subcommands().unwrap(),
+                    )
+                })?;
+
+                // Call function
+                exec.call::<()>(())?;
+                log::debug!("init.lua success for profile");
+            } else {
+                // Get list of subcommands, if the command does not have
+                // subcommands and is not the last command in list, then
+                // next subcommand is not valid
+                let subcommands =
+                    def.subcommand
+                        .as_ref()
+                        .ok_or_else(|| LoomErr::SubcommandNotFound {
+                            command: cmd.clone(),
+                            // Get next command
+                            subcommand: params[i + 1].clone(),
+                        })?;
+
+                // Set next command list reference
+                cm = subcommands;
+            }
+        }
+
+        Ok(())
     }
 }
