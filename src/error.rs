@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use thiserror::Error;
 
 /// Loom-specific errors
@@ -45,4 +45,7 @@ pub enum LoomErr {
 
     #[error("No such subcommand `{subcommand}`, for command `{command}`")]
     SubcommandNotFound { command: String, subcommand: String },
+
+    #[error("Could not find a template at {0:?}")]
+    TemplateNotFound(PathBuf)
 }

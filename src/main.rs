@@ -9,6 +9,7 @@ mod config;
 mod engine;
 mod error;
 mod fs;
+mod templates;
 mod tui;
 
 /// Wrapper around main to handle errors with custom formatting

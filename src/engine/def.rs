@@ -8,9 +8,10 @@ pub type CommandMap = HashMap<String, CommandDef>;
 /// Command structure inside init.lua file
 #[derive(Debug)]
 pub struct CommandDef {
+    /// Command description
+    pub description: Option<String>,
     /// Subcommands, with their name and definition
     pub subcommand: Option<CommandMap>,
-
     /// Execute command function
     pub exec: Option<Function>,
 }
@@ -35,7 +36,7 @@ impl FromLua for CommandDef {
         }
 
         Ok(Self {
-            // Get exec function
+            description: def.get::<Option<String>>("description")?,
             exec: def.get("exec")?,
             // Get subcommands from table pairs
             subcommand: def

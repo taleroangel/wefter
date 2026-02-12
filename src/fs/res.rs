@@ -17,7 +17,7 @@ const TEMPLATE_FOLDER_DIR: &str = "templates";
 /// Directory structure for a profile.
 /// Profiles are directories that contain at least an init.lua file
 /// and a template directory
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ResourceDir {
     /// Path to the profile directory
     pub path: PathBuf,
@@ -120,5 +120,15 @@ impl ResourceDir {
         }
 
         Ok(resources)
+    }
+
+    /// Update a template's [PathBuf] to be relative to profile template directory
+    pub fn build_template_path(&self, path: PathBuf) -> Result<PathBuf> {
+        let p = self.templates.join(path);
+        if !p.is_file() {
+            return Err(LoomErr::TemplateNotFound(p).into());
+        }
+
+        Ok(p)
     }
 }

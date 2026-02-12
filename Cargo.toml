@@ -32,4 +32,10 @@ serde = { version = "1.0.228", features = [ "default", "derive" ] }
 toml = { version = "0.9.11", features = [ "default" ] }
 
 # Lua runtime for resource configurations
-mlua = { version = "0.11.6", features = [ "lua55", "vendored", "anyhow" ] }
+mlua = { version = "0.11.6", features = [ "lua55", "vendored", "anyhow", "serde" ] }
+
+# Deserializing lua tables for templating
+serde_json = "1.0.149"
+
+# Templating engine
+tera = "1.20.1"

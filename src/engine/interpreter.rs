@@ -11,6 +11,7 @@ use crate::{
     },
 };
 use anyhow::Result;
+use mlua::Table;
 use mlua::{FromLua, Lua};
 use std::rc::Rc;
 use std::{fs, path::PathBuf};
@@ -18,6 +19,7 @@ use std::{fs, path::PathBuf};
 /// Wrapper for the Lua interpreter and the variables it need to load
 pub struct LuaInterpreter {
     interpreter: Lua,
+    profile_api_loaded: bool,
 }
 
 // Private
@@ -82,7 +84,7 @@ impl LuaInterpreter {
         globals.set(api::LUA_LOOM_VERSION.0, api::LUA_LOOM_VERSION.1)?;
         globals.set(api::LUA_LOOM_PROJECT_ROOT, dirs.root.clone())?;
 
-        // Register all APIs
+        // Register core APIs
         let fs = l.create_table_from(api::fs_module(&l)?)?;
         let io = l.create_table_from(api::io_module(&l, tui.clone())?)?;
 
@@ -90,7 +92,10 @@ impl LuaInterpreter {
         let loom = l.create_table_from(vec![("fs", fs), ("io", io)])?;
         l.globals().set(api::LUA_LOOM_TABLE_NAME, loom)?;
 
-        Ok(Self { interpreter: l })
+        Ok(Self {
+            interpreter: l,
+            profile_api_loaded: false,
+        })
     }
 
     /// Run all the registered auto functions to tell which profiles
@@ -117,8 +122,21 @@ impl LuaInterpreter {
             return Err(LoomErr::NoSuchLuaFile(res.init.clone()).into());
         }
 
-        // Register the loader for init.lua parent directory
-        self.register_loader(res)?;
+        // Register profile dependent API
+        if !self.profile_api_loaded {
+            // Register the loader for init.lua parent directory
+            self.register_loader(res)?;
+
+            // Get `loom` api table
+            let l = &self.interpreter;
+            let loom: Table = l.globals().get("loom")?;
+
+            // Register APIs
+            let t = l.create_table_from(api::template_module(l, res.clone())?)?;
+            loom.set("template", t)?;
+
+            self.profile_api_loaded = true;
+        }
 
         // Get definition from init.lua
         Ok(self.exec::<def::ProfileDef>(&res.init)?)

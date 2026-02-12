@@ -1,7 +1,16 @@
-use crate::{fs as loomfs, tui::TuiInterface};
+use crate::{
+    fs::{self as loomfs, res::ResourceDir},
+    templates,
+    tui::TuiInterface,
+};
 use anyhow::Result;
-use mlua::{Function, IntoLua, Lua, Value};
-use std::{fs, path::PathBuf, rc::Rc};
+use mlua::{Function, IntoLua, Lua, LuaSerdeExt, Table, Value};
+use std::{
+    collections::HashMap,
+    fs,
+    path::PathBuf,
+    rc::{self, Rc},
+};
 
 /// Type of the Loom api table
 pub type LoomModuleTable<'a> = Vec<(&'a str, Function)>;
@@ -91,4 +100,26 @@ pub fn io_module(l: &Lua, tui: Rc<TuiInterface>) -> Result<LoomModuleTable<'_>> 
             })?
         }),
     ])
+}
+
+/// Serialize a [Table] into a json ([serde_json::Value])
+pub fn serialize_table(lua: &Lua, table: Table) -> Result<serde_json::Value> {
+    let value: Value = Value::Table(table);
+    let json: serde_json::Value = lua.from_value(value)?;
+    Ok(json)
+}
+
+// Create a table for the 'template' submodule
+pub fn template_module(l: &Lua, profile: ResourceDir) -> Result<LoomModuleTable<'_>> {
+    Ok(vec![("create", {
+        let profile = profile.clone();
+        l.create_function(
+            move |lua, (dst, template, params): (PathBuf, PathBuf, Table)| {
+                let template = profile.build_template_path(template.clone())?;
+                let rendered = templates::render(template, serialize_table(lua, params)?)?;
+                fs::write(dst, rendered)?;
+                Ok(())
+            },
+        )?
+    })])
 }

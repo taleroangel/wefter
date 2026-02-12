@@ -1,7 +1,7 @@
 use crate::error::LoomErr;
 use anyhow::Result;
 use directories::ProjectDirs;
-use std::{env, fs, path::PathBuf};
+use std::{env, fs, path::{Path, PathBuf}};
 
 const APP_QUALIFIER: &str = env!("LOOM_PRJ_QUALIFIER");
 const APP_ORGANIZATION: &str = env!("LOOM_PRJ_ORG");
