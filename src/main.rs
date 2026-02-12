@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use crate::{error::LoomErr, fs::res::ResourceDir};
 use anyhow::Result;
 use clap::Parser;
@@ -11,7 +13,7 @@ mod tui;
 
 /// Wrapper around main to handle errors with custom formatting
 fn try_main() -> Result<()> {
-    let ui = tui::TuiInterface::new();
+    let ui = Rc::new(tui::TuiInterface::new());
 
     // Parse command line arguments
     let params = cli::Params::parse();
@@ -66,7 +68,7 @@ fn try_main() -> Result<()> {
     }
 
     // Create lua interpreter
-    let mut lua = engine::LuaInterpreter::new(&dirs)?;
+    let mut lua = engine::LuaInterpreter::new(&dirs, ui.clone())?;
 
     // Get the profile directory
     let profile: (&String, &ResourceDir) = if let Some(key) = &params.profile {
@@ -95,7 +97,7 @@ fn try_main() -> Result<()> {
                 })
                 .flatten(),
             // Prompt use to choose
-            1.. => ui.select_profile(&auto).map(|key| {
+            1.. => ui.select("Select a profile", &auto).map(|key| {
                 resources
                     .get_key_value(&key)
                     .ok_or_else(|| LoomErr::UnknownProfile(key))
@@ -106,8 +108,11 @@ fn try_main() -> Result<()> {
     log::debug!("Using profile: {:?}", &profile);
 
     // Load configuration from engine
-    let configuration = lua.run_init(profile.1)?;
-    log::info!("Successfully loaded configuration for profile: {:?}", profile.0);
+    let configuration: engine::ProfileDef = lua.run_init(profile.1)?;
+    log::info!(
+        "Successfully loaded configuration for profile: {:?}",
+        profile.0
+    );
     log::trace!("{:?}", configuration);
 
     // Execute command

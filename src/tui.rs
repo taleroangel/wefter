@@ -12,10 +12,7 @@ use termimad::{
 };
 
 /// Template for the help description
-const HELP_TEMPLATE_MD: &str = include_str!(concat!(
-    env!("CARGO_MANIFEST_DIR"),
-    "/static/help.md"
-));
+const HELP_TEMPLATE_MD: &str = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/static/help.md"));
 
 /// Template for showing resources
 const RESOURCE_LIST_TEMPLATE_MD: &str = include_str!(concat!(
@@ -82,11 +79,7 @@ impl TuiInterface {
                 .set("resource-path", format!("{:?}", &v.path))
                 .set_md(
                     "resource-auto",
-                    if v.auto.is_some() {
-                        "**✓**"
-                    } else {
-                        "*✗*"
-                    },
+                    if v.auto.is_some() { "**✓**" } else { "*✗*" },
                 );
         }
 
@@ -95,7 +88,12 @@ impl TuiInterface {
     }
 
     /// Prompt user for a profile
-    pub fn select_profile(&self, profiles: &Vec<String>) -> Result<String> {
-        Ok(inquire::Select::new("Select a profile", profiles.clone()).prompt()?)
+    pub fn select(&self, prompt: &str, opts: &Vec<String>) -> Result<String> {
+        Ok(inquire::Select::new(prompt, opts.clone()).prompt()?)
+    }
+
+    /// Prompt user for text input
+    pub fn input(&self, prompt: String) -> Result<String> {
+        Ok(inquire::Text::new(&format!("{}:", prompt)).prompt()?)
     }
 }

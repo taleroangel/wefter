@@ -19,7 +19,7 @@ LOOM_PROJECT_ROOT = ""
 ---@class loom
 loom = {}
 
--- ### Filesystem ### --
+-- ### FileSystem ### --
 
 --- Filesystem utilities.
 ---@class loom.fs
@@ -64,3 +64,30 @@ function loom.fs.read_to_string(path) end
 --- @return string|nil
 ---     IO Error, directory does not exist?.
 function loom.fs.read_dir(path) end
+
+-- ### I/O ### --
+
+--- TUI related I/O.
+---@class loom.io
+loom.io = {}
+
+--- Prompt user to input a string
+---
+--- @param prompt string
+---     Message to show on the input prompt
+---
+--- @return string|nil
+---     User input, or nil if none was given
+function loom.io.input(prompt, opts) end
+
+--- Prompt user to choose from a range of options, analogous to html <select>
+---
+--- @param prompt string
+---     Message to show on the input prompt
+---
+--- @param opts table
+---     Array with options as strings
+---
+--- @return string|nil
+---     Selected option, or nil if none was selected
+function loom.io.select(prompt, opts) end

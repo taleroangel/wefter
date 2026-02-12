@@ -1,7 +1,7 @@
-use crate::fs as loomfs;
+use crate::{fs as loomfs, tui::TuiInterface};
 use anyhow::Result;
 use mlua::{Function, IntoLua, Lua, Value};
-use std::{fs, path::PathBuf};
+use std::{fs, path::PathBuf, rc::Rc};
 
 /// Type of the Loom api table
 pub type LoomModuleTable<'a> = Vec<(&'a str, Function)>;
@@ -20,7 +20,7 @@ pub const LUA_LOOM_PROJECT_ROOT: &str = "LOOM_PROJECT_ROOT";
 /// errors int the original [Result] are converted to string into the second
 /// tuple field, errors during conversion are returned within the [Result]
 /// of this function
-fn wrap_lua_error<T: IntoLua, E: ToString>(
+fn wrap_error_tuple<T: IntoLua, E: ToString>(
     lua: &Lua,
     res: Result<T, E>,
 ) -> Result<(Value, Value), mlua::Error> {
@@ -30,32 +30,65 @@ fn wrap_lua_error<T: IntoLua, E: ToString>(
     })
 }
 
-/// Create a table with the 'fs' submodule
+/// Wrap a [Result<T, E>] into a standard Lua value of type T completely ignoring
+/// the error and returning Nil instead
+///
+/// errors during conversion are returned within the [Result] of this
+/// function.
+fn wrap_nil_value<T: IntoLua, E: ToString>(
+    lua: &Lua,
+    res: Result<T, E>,
+) -> Result<Value, mlua::Error> {
+    Ok(match res {
+        Result::Ok(value) => value.into_lua(lua)?,
+        Result::Err(_) => Value::Nil,
+    })
+}
+
+/// Create a table for the 'fs' submodule
 pub fn fs_module(l: &Lua) -> Result<LoomModuleTable<'_>> {
     Ok(vec![
         // Check if a path exists and is a regular file
         (
             "is_file",
-            l.create_function(move |_, path: PathBuf| Result::Ok(path.is_file()))?,
+            l.create_function(|_, path: PathBuf| Result::Ok(path.is_file()))?,
         ),
         // Check if a path exists and is a directory
         (
             "is_dir",
-            l.create_function(move |_, path: PathBuf| Result::Ok(path.is_dir()))?,
+            l.create_function(|_, path: PathBuf| Result::Ok(path.is_dir()))?,
         ),
         // Read file contents into a string
         (
             "read_to_string",
-            l.create_function(move |lua, path: PathBuf| {
-                wrap_lua_error(lua, fs::read_to_string(path))
+            l.create_function(|lua, path: PathBuf| {
+                wrap_error_tuple(lua, fs::read_to_string(path))
             })?,
         ),
         // List all files in a directory
         (
             "read_dir",
-            l.create_function(move |lua, path: PathBuf| {
-                wrap_lua_error(lua, loomfs::utils::read_directory(&path))
+            l.create_function(|lua, path: PathBuf| {
+                wrap_error_tuple(lua, loomfs::utils::read_directory(&path))
             })?,
         ),
+    ])
+}
+
+/// Create a table for the 'io' submodule
+pub fn io_module(l: &Lua, tui: Rc<TuiInterface>) -> Result<LoomModuleTable<'_>> {
+    Ok(vec![
+        // Prompt user to input a string
+        ("input", {
+            let tui = tui.clone();
+            l.create_function(move |lua, prompt: String| wrap_nil_value(lua, tui.input(prompt)))?
+        }),
+        // Prompt user to choose from a selection
+        ("select", {
+            let tui = tui.clone();
+            l.create_function(move |lua, (prompt, opts): (String, Vec<String>)| {
+                wrap_nil_value(lua, tui.select(&prompt, &opts))
+            })?
+        }),
     ])
 }

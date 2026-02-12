@@ -2,6 +2,7 @@ use super::api;
 use super::def;
 use crate::engine::def::CommandMap;
 use crate::engine::def::ProfileDef;
+use crate::tui::TuiInterface;
 use crate::{
     error::LoomErr,
     fs::{
@@ -11,6 +12,7 @@ use crate::{
 };
 use anyhow::Result;
 use mlua::{FromLua, Lua};
+use std::rc::Rc;
 use std::{fs, path::PathBuf};
 
 /// Wrapper for the Lua interpreter and the variables it need to load
@@ -72,7 +74,7 @@ impl LuaInterpreter {
 // Public
 impl LuaInterpreter {
     /// Create an instance of the interpreter and register the Loom API module
-    pub fn new(dirs: &DirCfg) -> Result<Self> {
+    pub fn new(dirs: &DirCfg, tui: Rc<TuiInterface>) -> Result<Self> {
         let l = Lua::new();
         let globals = l.globals();
 
@@ -82,9 +84,10 @@ impl LuaInterpreter {
 
         // Register all APIs
         let fs = l.create_table_from(api::fs_module(&l)?)?;
+        let io = l.create_table_from(api::io_module(&l, tui.clone())?)?;
 
         // Create global api and register it
-        let loom = l.create_table_from(vec![("fs", fs)])?;
+        let loom = l.create_table_from(vec![("fs", fs), ("io", io)])?;
         l.globals().set(api::LUA_LOOM_TABLE_NAME, loom)?;
 
         Ok(Self { interpreter: l })
