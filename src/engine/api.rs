@@ -6,10 +6,9 @@ use crate::{
 use anyhow::Result;
 use mlua::{Function, IntoLua, Lua, LuaSerdeExt, Table, Value};
 use std::{
-    collections::HashMap,
     fs,
     path::PathBuf,
-    rc::{self, Rc},
+    rc::Rc,
 };
 
 /// Type of the Loom api table
@@ -23,6 +22,9 @@ pub const LUA_LOOM_VERSION: (&str, &str) = ("LOOM_VERSION", env!("CARGO_PKG_VERS
 
 /// Name for a constant that contains the absolute path to the project root
 pub const LUA_LOOM_PROJECT_ROOT: &str = "LOOM_PROJECT_ROOT";
+
+/// String for embedding into files
+pub const LUA_LOOM_TEMPLATE_EMBEDDING_POINT: &str = "@loom.embed";
 
 /// Wrap a [Result<T, E>] into an standard Lua error tuple (T::IntoLua, String).
 ///
@@ -39,38 +41,30 @@ fn wrap_error_tuple<T: IntoLua, E: ToString>(
     })
 }
 
-/// Wrap a [Result<T, E>] into a standard Lua value of type T completely ignoring
-/// the error and returning Nil instead
-///
-/// errors during conversion are returned within the [Result] of this
-/// function.
-fn wrap_nil_value<T: IntoLua, E: ToString>(
-    lua: &Lua,
-    res: Result<T, E>,
-) -> Result<Value, mlua::Error> {
-    Ok(match res {
-        Result::Ok(value) => value.into_lua(lua)?,
-        Result::Err(_) => Value::Nil,
-    })
-}
-
 /// Create a table for the 'fs' submodule
 pub fn fs_module(l: &Lua) -> Result<LoomModuleTable<'_>> {
     Ok(vec![
         // Check if a path exists and is a regular file
         (
             "is_file",
-            l.create_function(|_, path: PathBuf| Result::Ok(path.is_file()))?,
+            l.create_function(|_, path: PathBuf| {
+                log::debug!("[loom.fs.is_file] File={:?}", path);
+                Result::Ok(path.is_file())
+            })?,
         ),
         // Check if a path exists and is a directory
         (
             "is_dir",
-            l.create_function(|_, path: PathBuf| Result::Ok(path.is_dir()))?,
+            l.create_function(|_, path: PathBuf| {
+                log::debug!("[loom.fs.is_dir] Directory={:?}", path);
+                Result::Ok(path.is_dir())
+            })?,
         ),
         // Read file contents into a string
         (
             "read_to_string",
             l.create_function(|lua, path: PathBuf| {
+                log::debug!("[loom.fs.read_to_string] File={:?}", path);
                 wrap_error_tuple(lua, fs::read_to_string(path))
             })?,
         ),
@@ -78,9 +72,11 @@ pub fn fs_module(l: &Lua) -> Result<LoomModuleTable<'_>> {
         (
             "read_dir",
             l.create_function(|lua, path: PathBuf| {
+                log::debug!("[loom.fs.read_dir] Directory={:?}", path);
                 wrap_error_tuple(lua, loomfs::utils::read_directory(&path))
             })?,
         ),
+        /* @loom.embed:fs */
     ])
 }
 
@@ -90,15 +86,18 @@ pub fn io_module(l: &Lua, tui: Rc<TuiInterface>) -> Result<LoomModuleTable<'_>> 
         // Prompt user to input a string
         ("input", {
             let tui = tui.clone();
-            l.create_function(move |lua, prompt: String| wrap_nil_value(lua, tui.input(prompt)))?
+            l.create_function(move |_, prompt: String| {
+                Ok(tui.input(prompt)?)
+            })?
         }),
         // Prompt user to choose from a selection
         ("select", {
             let tui = tui.clone();
-            l.create_function(move |lua, (prompt, opts): (String, Vec<String>)| {
-                wrap_nil_value(lua, tui.select(&prompt, &opts))
+            l.create_function(move |_, (prompt, opts): (String, Vec<String>)| {
+                Ok(tui.select(&prompt, &opts)?)
             })?
         }),
+        /* @loom.embed:io */
     ])
 }
 
@@ -111,15 +110,54 @@ pub fn serialize_table(lua: &Lua, table: Table) -> Result<serde_json::Value> {
 
 // Create a table for the 'template' submodule
 pub fn template_module(l: &Lua, profile: ResourceDir) -> Result<LoomModuleTable<'_>> {
-    Ok(vec![("create", {
-        let profile = profile.clone();
-        l.create_function(
-            move |lua, (dst, template, params): (PathBuf, PathBuf, Table)| {
-                let template = profile.build_template_path(template.clone())?;
-                let rendered = templates::render(template, serialize_table(lua, params)?)?;
-                fs::write(dst, rendered)?;
-                Ok(())
-            },
-        )?
-    })])
+    Ok(vec![
+        ("create", {
+            let profile = profile.clone();
+            l.create_function(
+                move |lua, (dst, template, params): (PathBuf, PathBuf, Table)| {
+                    let template = profile.build_template_path(template.clone())?;
+                    log::debug!(
+                        "[loom.template.create] Creating file {:?} with template {:?}",
+                        dst,
+                        template
+                    );
+
+                    let rendered = templates::render(template, serialize_table(lua, params)?)?;
+                    fs::write(dst, rendered)?;
+                    Ok(())
+                },
+            )?
+        }),
+        ("embed", {
+            let profile = profile.clone();
+            l.create_function(
+                move |lua,
+                      (dst, ipoint, template, params): (
+                    PathBuf,
+                    Option<String>,
+                    PathBuf,
+                    Table,
+                )| {
+                    // Insertion point builder
+                    let lookup = match ipoint {
+                        Some(e) => format!("{}:{}", LUA_LOOM_TEMPLATE_EMBEDDING_POINT, e),
+                        None => format!("{}", LUA_LOOM_TEMPLATE_EMBEDDING_POINT),
+                    };
+
+                    let template = profile.build_template_path(template.clone())?;
+                    let params = serialize_table(lua, params)?;
+
+                    log::debug!(
+                        "[loom.template.embed] template {:?} into {:?} at {:?}",
+                        template,
+                        dst,
+                        lookup
+                    );
+                    templates::embed(dst, lookup, template, params)?;
+                    Ok(())
+                },
+            )?
+        }),
+        /* @loom.embed:template */
+    ])
 }
