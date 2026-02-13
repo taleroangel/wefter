@@ -12,12 +12,15 @@ use termimad::{
 };
 
 /// Template for the help description
-const HELP_TEMPLATE_MD: &str = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/static/help.md"));
+const HELP_TEMPLATE_MD: &str = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/static/about.md"
+));
 
 /// Template for showing resources
 const RESOURCE_LIST_TEMPLATE_MD: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
-    "/static/resource_list_template.md"
+    "/static/resource_list.md"
 ));
 
 /// Interface for manipulating the TUI

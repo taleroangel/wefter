@@ -1,5 +1,7 @@
 # Loom
-*Loom* is a programmable code-generation tool for generating fully customizable code archetypes using Lua.
+**Loom** is a profile-driven automation runtime that lets you use Lua to define _cli_ command trees that perform structured, template-based code generation, embedding, or introspection.
+
+_Loom turns project conventions into executable automation._
 
 ### Template Engine (tera)
 https://keats.github.io/tera/docs/
