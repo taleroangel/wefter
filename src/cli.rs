@@ -39,7 +39,7 @@ pub fn setup_logger(verbose: u8) -> Result<()> {
 #[command(version, author, disable_help_flag = true, trailing_var_arg = true)]
 pub struct Params {
     /// Print Help
-    #[arg(long)]
+    #[arg(short, long)]
     pub help: bool,
 
     /// Enable Info(v), Debug(vv) or Trace(vvv) messages

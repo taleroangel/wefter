@@ -58,7 +58,7 @@ fn try_main() -> Result<()> {
     // Load resources paths
     let resources = fs::res::ResourceDir::load(&dirs)?;
     if resources.is_empty() {
-        // TODO: Render some documentation
+        ui.print_no_available_profiles(LoomErr::NoAvailableProfiles.to_string(), &dirs);
         return Err(LoomErr::NoAvailableProfiles.into());
     }
 

@@ -1,5 +1,6 @@
 use crate::{
     cli::Params,
+    error::LoomErr,
     fs::{dirs::DirCfg, res::ResourceDirTable},
 };
 use anyhow::Result;
@@ -12,15 +13,19 @@ use termimad::{
 };
 
 /// Template for the help description
-const HELP_TEMPLATE_MD: &str = include_str!(concat!(
-        env!("CARGO_MANIFEST_DIR"),
-        "/static/about.md"
-));
+const HELP_TEMPLATE_MD: &str =
+    include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/static/about.md"));
 
 /// Template for showing resources
 const RESOURCE_LIST_TEMPLATE_MD: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/static/resource_list.md"
+));
+
+/// Markdown template for 'no available profiles' error
+const ERRORS_NO_AVAILABLE_PROFILES_TEMPLATE_MD: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/static/errors/no_available_profiles.md"
 ));
 
 /// Interface for manipulating the TUI
@@ -87,6 +92,19 @@ impl TuiInterface {
         }
 
         // Print table
+        self.skin.print_owning_expander(&mdexpander, &mdtemplate);
+    }
+
+    /// Print documentation for [LoomErr::NoAvailableProfiles]
+    pub fn print_no_available_profiles(&self, errmsg: String, dirs: &DirCfg) {
+        // Use static markdown template
+        let mdtemplate = TextTemplate::from(ERRORS_NO_AVAILABLE_PROFILES_TEMPLATE_MD);
+        let mut mdexpander = OwningTemplateExpander::new();
+
+        // Show where the resources come from
+        mdexpander.set("error-message", errmsg);
+        mdexpander.set("path", format!("{:?}", dirs.data));
+
         self.skin.print_owning_expander(&mdexpander, &mdtemplate);
     }
 
