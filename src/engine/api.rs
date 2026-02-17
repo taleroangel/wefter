@@ -5,11 +5,7 @@ use crate::{
 };
 use anyhow::Result;
 use mlua::{Function, IntoLua, Lua, LuaSerdeExt, Table, Value};
-use std::{
-    fs,
-    path::PathBuf,
-    rc::Rc,
-};
+use std::{fs, path::PathBuf, rc::Rc};
 
 /// Type of the Loom api table
 pub type LoomModuleTable<'a> = Vec<(&'a str, Function)>;
@@ -86,15 +82,19 @@ pub fn io_module(l: &Lua, tui: Rc<TuiInterface>) -> Result<LoomModuleTable<'_>> 
         // Prompt user to input a string
         ("input", {
             let tui = tui.clone();
-            l.create_function(move |_, prompt: String| {
-                Ok(tui.input(prompt)?)
-            })?
+            l.create_function(move |_, prompt: String| Ok(tui.input(prompt)?))?
         }),
         // Prompt user to choose from a selection
         ("select", {
             let tui = tui.clone();
             l.create_function(move |_, (prompt, opts): (String, Vec<String>)| {
                 Ok(tui.select(&prompt, &opts)?)
+            })?
+        }),
+        ("markdown", {
+            let tui = tui.clone();
+            l.create_function(move |_, content: String| {
+                Ok(tui.print_markdown(content))
             })?
         }),
         /* @loom.embed:io */
@@ -115,14 +115,15 @@ pub fn template_module(l: &Lua, profile: ResourceDir) -> Result<LoomModuleTable<
             let profile = profile.clone();
             l.create_function(
                 move |lua, (dst, template, params): (PathBuf, PathBuf, Table)| {
-                    let template = profile.build_template_path(template.clone())?;
+                    let template = profile.build_template_path(template)?;
+                    let params = serialize_table(lua, params)?;
                     log::debug!(
                         "[loom.template.create] Creating file {:?} with template {:?}",
                         dst,
                         template
                     );
 
-                    let rendered = templates::render(template, serialize_table(lua, params)?)?;
+                    let rendered = templates::render(template, params)?;
                     fs::write(dst, rendered)?;
                     Ok(())
                 },
@@ -143,8 +144,7 @@ pub fn template_module(l: &Lua, profile: ResourceDir) -> Result<LoomModuleTable<
                         Some(e) => format!("{}:{}", LUA_LOOM_TEMPLATE_EMBEDDING_POINT, e),
                         None => format!("{}", LUA_LOOM_TEMPLATE_EMBEDDING_POINT),
                     };
-
-                    let template = profile.build_template_path(template.clone())?;
+                    let template = profile.build_template_path(template)?;
                     let params = serialize_table(lua, params)?;
 
                     log::debug!(
@@ -157,6 +157,17 @@ pub fn template_module(l: &Lua, profile: ResourceDir) -> Result<LoomModuleTable<
                     Ok(())
                 },
             )?
+        }),
+        ("get", {
+            let profile = profile.clone();
+            l.create_function(move |lua, (template, params): (PathBuf, Table)| {
+                let template = profile.build_template_path(template)?;
+                let params = serialize_table(lua, params)?;
+                
+                log::debug!("[loom.template.get] template {:?}", template);
+                let rendered = templates::render(template, params)?;
+                Ok(rendered)
+            })?
         }),
         /* @loom.embed:template */
     ])

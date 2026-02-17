@@ -2,6 +2,7 @@ return {
 	api = {
 		description = "Utilities for creating/listing functions in the Loom api",
 		subcommand = {
+            -- Create a new API entry
 			create = {
 				description = "Create a new function within a module",
 				exec = function()
@@ -30,6 +31,15 @@ return {
 					})
 				end,
 			},
+            -- List all of the API entries
+            list =  {
+                description = "List all modules and their functions",
+                exec = function ()
+                    -- Render the list
+                    local list = loom.template.get("api/list.md", {})
+                    loom.io.markdown(list)
+                end
+            }
 		},
 	},
 }

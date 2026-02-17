@@ -1,6 +1,5 @@
 use crate::{
     cli::Params,
-    error::LoomErr,
     fs::{dirs::DirCfg, res::ResourceDirTable},
 };
 use anyhow::Result;
@@ -51,6 +50,11 @@ impl TuiInterface {
     /// Alias for ::default
     pub fn new() -> Self {
         Self::default()
+    }
+
+    /// Print markdown directly to terminal
+    pub fn print_markdown(&self, content: String) {
+        self.skin.print_text(&content);
     }
 
     /// Print help message using Tui skin

@@ -94,6 +94,15 @@ function loom.io.input(prompt) end
 ---     Selected option, fails if no option was selected
 function loom.io.select(prompt, opts) end
 
+--- Render a markdown string into terminal.
+---
+--- @param content string
+---     Some foo bar
+--- 
+--- @return nil
+---     None. terminates program on error, use `pcall` if required.
+function loom.io.markdown(content) end
+
 -- @loom.embed:io
 
 -- ### Templates ### --
@@ -153,5 +162,19 @@ function loom.template.create(destination, template, params) end
 --- @return nil
 ---     None. terminates program on error, use `pcall` if required.
 function loom.template.embed(destination, ipoint, template, params) end
+
+--- Render a template and get its contents as a string.
+---
+--- @param template string
+---     Template path (must be relative to profile `templates` directory)
+---
+---     i.e "foo/bar.txt" resolves to "{profileDir}/foo/bar.txt"
+---
+--- @param params table
+---     json-like parameters for the template
+--- 
+--- @return string
+---     Rendered template contents. terminates program on error, use `pcall` if required.
+function loom.template.get(template, params) end
 
 -- @loom.embed:template
