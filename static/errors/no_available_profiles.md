@@ -1,6 +1,4 @@
-
-
-# ${error-message}
+# Error: ${error-message}
 
 A **profile** is a self-contained automation module that defines a CLI command tree in Lua and provides the templates it uses.
 

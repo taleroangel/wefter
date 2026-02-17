@@ -1,4 +1,7 @@
-## List of available resources
+
+
+## List of available profiles
+
 Profiles are loaded based on current sources:
 **System resources:** ${system-source}
 **Local resources: ** ${local-source}

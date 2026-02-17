@@ -59,8 +59,12 @@ pub struct Params {
     pub local_resources: PathBuf,
 
     /// List available profiles *(Profiles are read from resource directories)*
-    #[arg(short, long)]
-    pub list: bool,
+    #[arg(long)]
+    pub profiles: bool,
+
+    /// List command structure for the current profile
+    #[arg(long, short = 'l')]
+    pub commands: bool,
 
     /// Profile to use, if not present use **'auto.lua'**
     #[arg(short, long)]

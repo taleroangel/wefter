@@ -143,10 +143,10 @@ impl LuaInterpreter {
     }
 
     /// Execute a command given a profile definition
-    pub fn exec_command(&self, params: Vec<String>, def: ProfileDef) -> Result<()> {
+    pub fn exec_command(&self, params: Vec<String>, def: &ProfileDef) -> Result<()> {
         if params.is_empty() {
             // Get all commands as a list
-            return Err(LoomErr::EmptyParameters(def.0.keys().cloned().collect()).into());
+            return Err(LoomErr::EmptyParameters.into());
         }
 
         // Reference to the current command definition

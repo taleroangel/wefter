@@ -34,8 +34,8 @@ pub enum LoomErr {
     #[error("In (lua) file {0:?}")]
     BadLuaExec(PathBuf, #[source] mlua::Error),
 
-    #[error("Expected one of the following commands {0:?}")]
-    EmptyParameters(Vec<String>),
+    #[error("Got an empty list of parameters")]
+    EmptyParameters,
 
     #[error("Bad profile parameters. Command `{0}` is not defined")]
     CommandNotFound(String),

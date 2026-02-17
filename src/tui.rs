@@ -1,5 +1,7 @@
 use crate::{
     cli::Params,
+    engine::{CommandMap, ProfileDef},
+    error::LoomErr,
     fs::{dirs::DirCfg, res::ResourceDirTable},
 };
 use anyhow::Result;
@@ -21,16 +23,27 @@ const LUA_API_META: &str = include_str!(concat!(
 const HELP_TEMPLATE_MD: &str =
     include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/static/cli/about.md"));
 
-/// Template for showing resources
-const RESOURCE_LIST_TEMPLATE_MD: &str = include_str!(concat!(
+/// Template for the help description
+const PROFILE_DEF_TEMPLATE_MD: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
-    "/static/cli/resource_list.md"
+    "/static/cli/profile_def.md"
 ));
 
-/// Markdown template for 'no available profiles' error
+/// Template for showing resources
+const PROFILE_LIST_TEMPLATE_MD: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/static/cli/profile_list.md"
+));
+/// Markdown template for [LoomErr::NoAvailableProfiles] error
 const ERRORS_NO_AVAILABLE_PROFILES_TEMPLATE_MD: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/static/errors/no_available_profiles.md"
+));
+
+/// Markdown template for [LoomErr::EmptyParameters] error
+const ERRORS_EMPTY_PARAMETERS_TEMPLATE_MD: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/static/errors/empty_parameters.md"
 ));
 
 /// Interface for manipulating the TUI
@@ -78,9 +91,9 @@ impl TuiInterface {
     }
 
     /// Pretty print a table with all available resources
-    pub fn print_resources(&self, resources: &ResourceDirTable, dirs: &DirCfg) {
+    pub fn print_profile_list(&self, resources: &ResourceDirTable, dirs: &DirCfg) {
         // Use static markdown template
-        let mdtemplate = TextTemplate::from(RESOURCE_LIST_TEMPLATE_MD);
+        let mdtemplate = TextTemplate::from(PROFILE_LIST_TEMPLATE_MD);
         let mut mdexpander = OwningTemplateExpander::new();
 
         // Show where the resources come from
@@ -112,14 +125,85 @@ impl TuiInterface {
     }
 
     /// Print documentation for [LoomErr::NoAvailableProfiles]
-    pub fn print_no_available_profiles(&self, errmsg: String, dirs: &DirCfg) {
+    pub fn print_err_no_available_profiles(&self, dirs: &DirCfg) {
         // Use static markdown template
         let mdtemplate = TextTemplate::from(ERRORS_NO_AVAILABLE_PROFILES_TEMPLATE_MD);
         let mut mdexpander = OwningTemplateExpander::new();
 
-        // Show where the resources come from
-        mdexpander.set("error-message", errmsg);
+        mdexpander.set("error-message", LoomErr::NoAvailableProfiles.to_string());
         mdexpander.set("path", format!("{:?}", dirs.data));
+
+        self.skin.print_owning_expander(&mdexpander, &mdtemplate);
+    }
+
+    /// Print documentation for [LoomErr::EmptyParameters]
+    pub fn print_err_empty_parameters(&self, profile: &String, def: &ProfileDef) {
+        // Use static markdown template
+        let mdtemplate = TextTemplate::from(ERRORS_EMPTY_PARAMETERS_TEMPLATE_MD);
+        let mut mdexpander = OwningTemplateExpander::new();
+
+        mdexpander.set("error-message", LoomErr::EmptyParameters.to_string());
+
+        self.skin.print_owning_expander(&mdexpander, &mdtemplate);
+
+        // Now show the actual profile def
+        self.print_profile(profile, def);
+    }
+
+    /// Recursive function to print a subcommand tree
+    fn render_subcommands(&self, out: &mut String, sub: &CommandMap, level: u16) {
+        for (i, item) in sub.iter().enumerate() {
+            let (k, v) = item;
+
+            let is_root = level == 0;
+            let is_last = sub.len() == i + 1;
+            let is_exec = v.exec.is_some();
+
+            // Create indentation
+            for _ in 0..level {
+                out.push_str(" ");
+            }
+
+            // Dont add branches for root elements
+            if !is_root {
+                out.push_str(if is_last { "└── " } else { "├── " });
+            }
+
+            // Exec commands should be **bold**
+            out.push_str(&if is_exec {
+                format!("**{}** `exec`", k)
+            } else {
+                format!("*{}*", k)
+            });
+
+            // Description if applicable
+            if let Some(desc) = &v.description {
+                out.push_str(&format!(" {}", desc));
+            }
+
+            // Print
+            out.push_str("\n");
+
+            // Print the subcommands
+            if let Some(sub) = &v.subcommand {
+                self.render_subcommands(out, sub, level + 1);
+            }
+        }
+    }
+
+    /// Print [ProfileDef] in a table
+    pub fn print_profile(&self, name: &String, def: &ProfileDef) {
+
+        // Render profile tree onto a String
+        let mut out = String::new();
+        self.render_subcommands(&mut out, &def.0, 0);
+
+        // Use static markdown template
+        let mdtemplate = TextTemplate::from(PROFILE_DEF_TEMPLATE_MD);
+        let mut mdexpander = OwningTemplateExpander::new();
+
+        mdexpander.set("profile", name);
+        mdexpander.set_md("tree", out);
 
         self.skin.print_owning_expander(&mdexpander, &mdtemplate);
     }

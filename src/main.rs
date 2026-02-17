@@ -1,8 +1,7 @@
-use std::rc::Rc;
-
 use crate::{error::LoomErr, fs::res::ResourceDir};
-use anyhow::{Ok, Result};
+use anyhow::Result;
 use clap::Parser;
+use std::rc::Rc;
 
 mod cli;
 mod config;
@@ -64,13 +63,13 @@ fn try_main() -> Result<()> {
     // Load resources paths
     let resources = fs::res::ResourceDir::load(&dirs)?;
     if resources.is_empty() {
-        ui.print_no_available_profiles(LoomErr::NoAvailableProfiles.to_string(), &dirs);
+        ui.print_err_no_available_profiles(&dirs);
         return Err(LoomErr::NoAvailableProfiles.into());
     }
 
     // List resources & end program
-    if params.list {
-        ui.print_resources(&resources, &dirs);
+    if params.profiles {
+        ui.print_profile_list(&resources, &dirs);
         return Ok(());
     }
 
@@ -114,16 +113,33 @@ fn try_main() -> Result<()> {
 
     log::debug!("Using profile: {:?}", &profile);
 
-    // Load configuration from engine
-    let configuration: engine::ProfileDef = lua.run_init(profile.1)?;
-    log::info!(
-        "Successfully loaded configuration for profile: {:?}",
-        profile.0
-    );
-    log::trace!("{:?}", configuration);
+    // Load profile definition
+    let pdef: engine::ProfileDef = lua.run_init(profile.1)?;
+    log::info!("Successfully loaded profile definition: {:?}", profile.0);
+    log::trace!("{:?}", pdef);
+
+    // List profile commands
+    if params.commands {
+        ui.print_profile(profile.0, &pdef);
+        return Ok(());
+    }
 
     // Execute command
-    lua.exec_command(params.trailing, configuration)?;
+    match lua.exec_command(params.trailing, &pdef) {
+        Ok(_) => log::debug!("Executed 'init.lua' successfully"),
+        Err(err) => {
+            // Match error type
+            if let Some(loomerr) = err.downcast_ref::<LoomErr>() {
+                match loomerr {
+                    LoomErr::EmptyParameters => ui.print_err_empty_parameters(profile.0, &pdef),
+                    _ => {}
+                }
+            }
+
+            // Terminate with error
+            return Err(err);
+        }
+    };
 
     Ok(())
 }
