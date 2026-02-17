@@ -193,7 +193,6 @@ impl TuiInterface {
 
     /// Print [ProfileDef] in a table
     pub fn print_profile(&self, name: &String, def: &ProfileDef) {
-
         // Render profile tree onto a String
         let mut out = String::new();
         self.render_subcommands(&mut out, &def.0, 0);

@@ -1,14 +1,12 @@
-use super::api;
-use super::def;
-use crate::engine::def::CommandMap;
-use crate::engine::def::ProfileDef;
-use crate::tui::TuiInterface;
+use super::{api, def};
 use crate::{
+    engine::def::{CommandMap, ProfileDef},
     error::LoomErr,
     fs::{
         dirs::DirCfg,
         res::{ResourceDir, ResourceDirTable},
     },
+    tui::TuiInterface,
 };
 use anyhow::Result;
 use mlua::Table;

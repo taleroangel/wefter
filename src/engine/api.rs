@@ -93,9 +93,7 @@ pub fn io_module(l: &Lua, tui: Rc<TuiInterface>) -> Result<LoomModuleTable<'_>> 
         }),
         ("markdown", {
             let tui = tui.clone();
-            l.create_function(move |_, content: String| {
-                Ok(tui.print_markdown(content))
-            })?
+            l.create_function(move |_, content: String| Ok(tui.print_markdown(content)))?
         }),
         /* @loom.embed:io */
     ])
@@ -163,7 +161,7 @@ pub fn template_module(l: &Lua, profile: ResourceDir) -> Result<LoomModuleTable<
             l.create_function(move |lua, (template, params): (PathBuf, Table)| {
                 let template = profile.build_template_path(template)?;
                 let params = serialize_table(lua, params)?;
-                
+
                 log::debug!("[loom.template.get] template {:?}", template);
                 let rendered = templates::render(template, params)?;
                 Ok(rendered)

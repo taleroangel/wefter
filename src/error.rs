@@ -47,5 +47,5 @@ pub enum LoomErr {
     SubcommandNotFound { command: String, subcommand: String },
 
     #[error("Could not find a template at {0:?}")]
-    TemplateNotFound(PathBuf)
+    TemplateNotFound(PathBuf),
 }

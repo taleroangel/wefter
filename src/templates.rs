@@ -1,6 +1,10 @@
 use anyhow::Result;
 use serde_json::Value;
-use std::{fs, io::{self, BufRead, Write}, path::PathBuf};
+use std::{
+    fs,
+    io::{self, BufRead, Write},
+    path::PathBuf,
+};
 use tera::{Context, Tera};
 
 /// Render a template (from a [PathBuf]) into a [String]
@@ -26,7 +30,7 @@ pub fn render(path: PathBuf, json: Value) -> Result<String> {
 /// inserts the template at the line before the _insertion point_.
 ///
 /// # Arguments
-/// 
+///
 /// * `file` - Path to the file on which the template is going to be embedded.
 /// * `lookup` - Insertion Point String. String to look up for within the file,
 /// the template is going to be inserted the line before `lookup` is found for
@@ -40,7 +44,6 @@ pub fn render(path: PathBuf, json: Value) -> Result<String> {
 /// line, and if the line contains the `lookup` string, then the template is
 /// rendered before copying the line with the insertion point
 pub fn embed(srcpath: PathBuf, lookup: String, template: PathBuf, tjson: Value) -> Result<()> {
-
     // Render template
     let t = render(template, tjson)?;
 
@@ -58,7 +61,6 @@ pub fn embed(srcpath: PathBuf, lookup: String, template: PathBuf, tjson: Value) 
     // the template before copying
     let mut rlines = read.lines();
     while let Some(l) = rlines.next() {
-
         let l = l?;
 
         // Previous line did have the insertion point
