@@ -120,6 +120,24 @@ my-project/
 
 Use the data directory for reusable profiles, and `.loom/` for project-specific ones.
 
+## Lua LSP
+
+Need help navigating the API? _loom_ can create a [Lua Definition File](https://luals.github.io/wiki/definition-files/), this file will be used by your LSP to give you proper diagnostics and completion.
+
+Create a **definition file** using the following command
+```
+loom --meta > .loom.d.lua
+```
+
+Then, setup your favorite LSP to use it.
+
+**LuaLS** example, `.luarc.json`
+```json
+{
+    "workspace.library": [".loom.d.lua"],
+    "diagnostics.globals": ["loom", "LOOM_VERSION", "LOOM_PROJECT_ROOT"]
+}
+```
 
 ### Template Engine (tera)
 https://keats.github.io/tera/docs/

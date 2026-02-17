@@ -42,11 +42,15 @@ pub struct Params {
     #[arg(short, long)]
     pub help: bool,
 
-    /// Enable Info(v), Debug(vv) or Trace(vvv) messages
+    /// Print **Lua Definition File** `loom.d.lua` directly to terminal
+    #[arg(long)]
+    pub meta: bool,
+
+    /// Enable Info(**v**), Debug(**vv**) or Trace(**vvv**) messages
     #[arg(short, long, action = clap::ArgAction::Count)]
     pub verbose: u8,
 
-    /// Override project root (Current working directory by default)
+    /// Override project root *(Current working directory by default)*
     #[arg(long)]
     pub root: Option<PathBuf>,
 
@@ -54,14 +58,14 @@ pub struct Params {
     #[arg(short = 'd', long, default_value = ".loom")]
     pub local_resources: PathBuf,
 
-    /// List available profiles (profiles are read from resource directories)
+    /// List available profiles *(Profiles are read from resource directories)*
     #[arg(short, long)]
     pub list: bool,
 
-    /// Profile to use, if not present use 'auto.lua'
+    /// Profile to use, if not present use **'auto.lua'**
     #[arg(short, long)]
     pub profile: Option<String>,
 
-    /// Trailing parameters, this ones are sent to the profile configuration
+    /// Trailing parameters, this ones are sent directly to the profile configuration
     pub trailing: Vec<String>,
 }

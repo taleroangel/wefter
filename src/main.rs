@@ -1,7 +1,7 @@
 use std::rc::Rc;
 
 use crate::{error::LoomErr, fs::res::ResourceDir};
-use anyhow::Result;
+use anyhow::{Ok, Result};
 use clap::Parser;
 
 mod cli;
@@ -20,6 +20,12 @@ fn try_main() -> Result<()> {
     let params = cli::Params::parse();
     if params.help {
         ui.print_help();
+        return Ok(());
+    }
+
+    // Print meta
+    if params.meta {
+        ui.print_lua_meta();
         return Ok(());
     }
 

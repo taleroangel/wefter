@@ -11,14 +11,20 @@ use termimad::{
     minimad::{OwningTemplateExpander, TextTemplate},
 };
 
+/// loom.d.lua API documentation
+const LUA_API_META: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/static/lua/loom.d.lua"
+));
+
 /// Template for the help description
 const HELP_TEMPLATE_MD: &str =
-    include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/static/about.md"));
+    include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/static/cli/about.md"));
 
 /// Template for showing resources
 const RESOURCE_LIST_TEMPLATE_MD: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
-    "/static/resource_list.md"
+    "/static/cli/resource_list.md"
 ));
 
 /// Markdown template for 'no available profiles' error
@@ -57,10 +63,16 @@ impl TuiInterface {
         self.skin.print_text(&content);
     }
 
+    /// Print `loom.d.lua` file
+    pub fn print_lua_meta(&self) {
+        println!("{}", LUA_API_META)
+    }
+
     /// Print help message using Tui skin
     pub fn print_help(&self) {
         Printer::new(Params::command())
             .with("introduction", HELP_TEMPLATE_MD)
+            .with("options", clap_help::TEMPLATE_OPTIONS_MERGED_VALUE)
             .with_skin(self.skin.clone())
             .print_help();
     }
