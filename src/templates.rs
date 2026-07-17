@@ -7,7 +7,7 @@ use std::{
 };
 use tera::{Context, Tera};
 
-/// Render a template (from a [PathBuf]) into a [String]
+/// Render a template (from a [PathBuf]) into a [String] using variables from
 pub fn render(path: PathBuf, json: Value) -> Result<String> {
     // Read the file
     let template = fs::read_to_string(&path)?;
@@ -18,7 +18,7 @@ pub fn render(path: PathBuf, json: Value) -> Result<String> {
     tera.add_raw_template(name, &template)?;
 
     // Insert parameters into template
-    let context = Context::from_value(json)?;
+    let context = Context::from_serialize(&json)?;
     Ok(tera.render(name, &context)?)
 }
 

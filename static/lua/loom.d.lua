@@ -185,4 +185,56 @@ function loom.template.get(template, params) end
 --- @class loom.txt
 loom.txt = {}
 
+--- Transform a text into `snake_case`.
+--- i.e "foo_bar"
+---
+--- @param str string
+---     String to apply casing to
+--- 
+--- @return string
+---     String with casing applied
+function loom.txt.to_snake_case(str) end
+
+--- Transform a text into `camel_case`.
+---	i.e "fooBar"
+---
+--- @param str string
+---     String to apply casing to
+--- 
+--- @return string
+---     String with casing applied
+function loom.txt.to_camel_case(str) end
+
+--- Transform a text into `upper_camel_case`.
+--- i.e "FooBar"
+---
+--- Alias to `to_pascal_case`
+---
+--- @param str string
+---     String to apply casing to
+--- 
+--- @return string
+---     String with casing applied
+function loom.txt.to_upper_camel_case(str) end
+
+--- Transform a text into `pascal_case`.
+--- i.e "FooBar"
+---
+--- @param str string
+---     String to apply casing to
+--- 
+--- @return string
+---     String with casing applied
+function loom.txt.to_pascal_case(str) end
+
+--- Transform a text into `kebab_case`.
+--- i.e "foo-bar"
+---
+--- @param str string
+---     String to apply casing to
+--- 
+--- @return string
+---     String with casing applied
+function loom.txt.to_kebab_case(str) end
+
 -- @loom.embed:txt

@@ -131,13 +131,15 @@ fn try_main() -> Result<()> {
     match lua.exec_command(params.trailing, &pdef) {
         Ok(history) => {
             log::debug!("Executed 'init.lua' successfully");
-            ui.print_history(
-                Rc::into_inner(history)
+            if !history.borrow().is_empty() {
+                ui.print_history(
+                    Rc::into_inner(history)
                     .ok_or(LoomErr::ApplicationError(
-                        "Failed to take ownership of 'history'".to_string(),
+                            "Failed to take ownership of 'history'".to_string(),
                     ))?
                     .into_inner(),
-            );
+                );
+            }
         }
         Err(err) => match err {
             LoomErr::EmptyParameters => ui.print_err_empty_parameters(profile.0, &pdef),

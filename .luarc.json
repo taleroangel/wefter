@@ -1,4 +1,4 @@
 {
     "workspace.library": ["./static/lua/loom.d.lua"],
-    "diagnostics.globals": ["loom", "LOOM_VERSION", "LOOM_PROJECT_ROOT"]
+    "diagnostics.globals": ["vim", "loom", "LOOM_VERSION", "LOOM_PROJECT_ROOT"]
 }
