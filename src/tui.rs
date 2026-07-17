@@ -2,7 +2,7 @@ use crate::{
     cli::Params,
     engine::{CommandMap, ProfileDef},
     error::LoomErr,
-    fs::{dirs::DirCfg, res::ResourceDirTable},
+    fs::{self, dirs::DirCfg, hist::HistoryAction, res::ResourceDirTable},
 };
 use anyhow::Result;
 use clap::CommandFactory;
@@ -34,6 +34,13 @@ const PROFILE_LIST_TEMPLATE_MD: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/static/cli/profile_list.md"
 ));
+
+/// Markdown template for [LoomErr] generic error
+const ERRORS_GENERIC_TEMPLATE_MD: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/static/errors/generic_error.md"
+));
+
 /// Markdown template for [LoomErr::NoAvailableProfiles] error
 const ERRORS_NO_AVAILABLE_PROFILES_TEMPLATE_MD: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
@@ -124,6 +131,17 @@ impl TuiInterface {
         self.skin.print_owning_expander(&mdexpander, &mdtemplate);
     }
 
+    /// Show error
+    pub fn print_error(&self, err: &LoomErr) {
+        // Use static markdown template
+        let mdtemplate = TextTemplate::from(ERRORS_GENERIC_TEMPLATE_MD);
+        let mut mdexpander = OwningTemplateExpander::new();
+
+        mdexpander.set("error-message", &err.to_string());
+        println!(); // newline
+        self.skin.print_owning_expander(&mdexpander, &mdtemplate);
+    }
+
     /// Print documentation for [LoomErr::NoAvailableProfiles]
     pub fn print_err_no_available_profiles(&self, dirs: &DirCfg) {
         // Use static markdown template
@@ -148,6 +166,25 @@ impl TuiInterface {
 
         // Now show the actual profile def
         self.print_profile(profile, def);
+    }
+
+    /// Print file history
+    pub fn print_history(&self, history: fs::hist::History) {
+        println!(); // newline
+        self.skin.print_inline("**Files changed: **");
+        println!(); // newline
+        for action in history {
+            self.skin.print_inline(
+                match action {
+                    HistoryAction::CreateFile(path) => format!("**[CREATED]** {:?}", path),
+                    HistoryAction::ModifyFile(path, point) => {
+                        format!("*[MODIFIED at {}]* {:?}", point, path)
+                    }
+                }
+                .as_str(),
+            );
+            println!(); // newline
+        }
     }
 
     /// Recursive function to print a subcommand tree

@@ -4,6 +4,7 @@ use crate::{
     error::LoomErr,
     fs::{
         dirs::DirCfg,
+        hist::{History, HistoryRef},
         res::{ResourceDir, ResourceDirTable},
     },
     tui::TuiInterface,
@@ -11,13 +12,14 @@ use crate::{
 use anyhow::Result;
 use mlua::Table;
 use mlua::{FromLua, Lua};
-use std::rc::Rc;
+use std::{cell::RefCell, rc::Rc};
 use std::{fs, path::PathBuf};
 
 /// Wrapper for the Lua interpreter and the variables it need to load
 pub struct LuaInterpreter {
     interpreter: Lua,
     profile_api_loaded: bool,
+    history: HistoryRef,
 }
 
 // Private
@@ -82,9 +84,15 @@ impl LuaInterpreter {
         globals.set(api::LUA_LOOM_VERSION.0, api::LUA_LOOM_VERSION.1)?;
         globals.set(api::LUA_LOOM_PROJECT_ROOT, dirs.root.clone())?;
 
+        // Create history for keeping track of IO operations
+        let history = HistoryRef::new(RefCell::new(History::new()));
+
         // Register core APIs
         let fs = l.create_table_from(api::fs_module(&l)?)?;
         let io = l.create_table_from(api::io_module(&l, tui.clone())?)?;
+
+        // Other APIs that require access to runtime variables are initialized
+        // at `LuaInterpreter::run_init(self)`
 
         // Create global api and register it
         let loom = l.create_table_from(vec![("fs", fs), ("io", io)])?;
@@ -93,6 +101,7 @@ impl LuaInterpreter {
         Ok(Self {
             interpreter: l,
             profile_api_loaded: false,
+            history: history.clone(),
         })
     }
 
@@ -130,7 +139,9 @@ impl LuaInterpreter {
             let loom: Table = l.globals().get("loom")?;
 
             // Register APIs
-            let t = l.create_table_from(api::template_module(l, res.clone())?)?;
+            // Some 'core' APIs are initialized early at `LuaInterpreter::new`
+            let t =
+                l.create_table_from(api::template_module(l, res.clone(), self.history.clone())?)?;
             loom.set("template", t)?;
 
             self.profile_api_loaded = true;
@@ -140,8 +151,8 @@ impl LuaInterpreter {
         Ok(self.exec::<def::ProfileDef>(&res.init)?)
     }
 
-    /// Execute a command given a profile definition
-    pub fn exec_command(&self, params: Vec<String>, def: &ProfileDef) -> Result<()> {
+    /// Execute a command given a profile definition (consumes interpreter)
+    pub fn exec_command(self, params: Vec<String>, def: &ProfileDef) -> Result<HistoryRef, LoomErr> {
         if params.is_empty() {
             // Get all commands as a list
             return Err(LoomErr::EmptyParameters.into());
@@ -170,7 +181,7 @@ impl LuaInterpreter {
                 })?;
 
                 // Call function
-                exec.call::<()>(())?;
+                exec.call::<()>(()).map_err(|e| LoomErr::InterpreterError(e))?;
                 log::debug!("init.lua success for profile");
             } else {
                 // Get list of subcommands, if the command does not have
@@ -190,6 +201,7 @@ impl LuaInterpreter {
             }
         }
 
-        Ok(())
+        // Reference count should be zero at the end of this function
+        Ok(self.history)
     }
 }

@@ -48,4 +48,10 @@ pub enum LoomErr {
 
     #[error("Could not find a template at {0:?}")]
     TemplateNotFound(PathBuf),
+
+    #[error("Internal application error: {0}")]
+    ApplicationError(String),
+
+    #[error("Error during Lua parsing: {0}")]
+    InterpreterError(mlua::Error),
 }

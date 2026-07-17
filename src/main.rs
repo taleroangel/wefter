@@ -126,19 +126,20 @@ fn try_main() -> Result<()> {
 
     // Execute command
     match lua.exec_command(params.trailing, &pdef) {
-        Ok(_) => log::debug!("Executed 'init.lua' successfully"),
-        Err(err) => {
-            // Match error type
-            if let Some(loomerr) = err.downcast_ref::<LoomErr>() {
-                match loomerr {
-                    LoomErr::EmptyParameters => ui.print_err_empty_parameters(profile.0, &pdef),
-                    _ => {}
-                }
-            }
-
-            // Terminate with error
-            return Err(err);
+        Ok(history) => {
+            log::debug!("Executed 'init.lua' successfully");
+            ui.print_history(
+                Rc::into_inner(history)
+                    .ok_or(LoomErr::ApplicationError(
+                        "Failed to take ownership of 'history'".to_string(),
+                    ))?
+                    .into_inner(),
+            );
         }
+        Err(err) => match err {
+            LoomErr::EmptyParameters => ui.print_err_empty_parameters(profile.0, &pdef),
+            _ => ui.print_error(&err),
+        },
     };
 
     Ok(())
