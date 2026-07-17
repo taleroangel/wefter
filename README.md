@@ -143,4 +143,5 @@ Then, setup your favorite LSP to use it.
 https://keats.github.io/tera/docs/
 
 ### auto.lua
+Only `early-loading` API modules are available
 Does not have access to other modules in its directory

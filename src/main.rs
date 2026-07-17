@@ -74,7 +74,7 @@ fn try_main() -> Result<()> {
     }
 
     // Create lua interpreter
-    let mut lua = engine::LuaInterpreter::new(&dirs, ui.clone())?;
+    let mut lua = engine::LuaInterpreter::new(&dirs)?;
 
     // Get the profile directory
     let profile: (&String, &ResourceDir) = if let Some(key) = &params.profile {
@@ -114,7 +114,7 @@ fn try_main() -> Result<()> {
     log::debug!("Using profile: {:?}", &profile);
 
     // Load profile definition
-    let pdef: engine::ProfileDef = lua.run_init(profile.1)?;
+    let pdef: engine::ProfileDef = lua.run_init(&profile.1)?;
     log::info!("Successfully loaded profile definition: {:?}", profile.0);
     log::trace!("{:?}", pdef);
 
@@ -123,6 +123,9 @@ fn try_main() -> Result<()> {
         ui.print_profile(profile.0, &pdef);
         return Ok(());
     }
+
+    // Initialize the loom API once the profile has been loaded
+    lua.init(profile.1, ui.clone())?;
 
     // Execute command
     match lua.exec_command(params.trailing, &pdef) {

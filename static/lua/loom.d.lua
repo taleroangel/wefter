@@ -21,7 +21,9 @@ loom = {}
 
 -- ### FileSystem ### --
 
---- Filesystem utilities.
+--- Filesystem utilities. (early-loading)
+--- This module is available during `auto.lua` and `init.lua` parsing
+---
 --- @class loom.fs
 loom.fs = {}
 
@@ -178,3 +180,9 @@ function loom.template.embed(destination, ipoint, template, params) end
 function loom.template.get(template, params) end
 
 -- @loom.embed:template
+
+--- Text manipulation utilities
+--- @class loom.txt
+loom.txt = {}
+
+-- @loom.embed:txt

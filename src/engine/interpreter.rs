@@ -18,7 +18,13 @@ use std::{fs, path::PathBuf};
 /// Wrapper for the Lua interpreter and the variables it need to load
 pub struct LuaInterpreter {
     interpreter: Lua,
-    profile_api_loaded: bool,
+
+    /// Some APIs can only be used when a profile is loaded, those that do not
+    /// require it are called `early-loading` modules, and they are initialized
+    /// at `Self::new`. Other modules are initialized at `Self::init` once
+    /// a profile is selected. This flag checks if the entire API has been registered
+    api_registered: bool,
+
     history: HistoryRef,
 }
 
@@ -76,7 +82,7 @@ impl LuaInterpreter {
 // Public
 impl LuaInterpreter {
     /// Create an instance of the interpreter and register the Loom API module
-    pub fn new(dirs: &DirCfg, tui: Rc<TuiInterface>) -> Result<Self> {
+    pub fn new(dirs: &DirCfg) -> Result<Self> {
         let l = Lua::new();
         let globals = l.globals();
 
@@ -87,22 +93,49 @@ impl LuaInterpreter {
         // Create history for keeping track of IO operations
         let history = HistoryRef::new(RefCell::new(History::new()));
 
-        // Register core APIs
+        /* Loom API `early-loading` module registration
+         *
+         * Other APIs must be registered at initialization `LuaInterpreter::init(self)`
+         */
+
         let fs = l.create_table_from(api::fs_module(&l)?)?;
-        let io = l.create_table_from(api::io_module(&l, tui.clone())?)?;
 
-        // Other APIs that require access to runtime variables are initialized
-        // at `LuaInterpreter::run_init(self)`
-
-        // Create global api and register it
-        let loom = l.create_table_from(vec![("fs", fs), ("io", io)])?;
+        // Create global api table `loom` and register it as global
+        let loom = l.create_table_from(vec![("fs", fs)])?;
         l.globals().set(api::LUA_LOOM_TABLE_NAME, loom)?;
 
         Ok(Self {
             interpreter: l,
-            profile_api_loaded: false,
+            api_registered: false,
             history: history.clone(),
         })
+    }
+
+    /// Initialize modules and API
+    pub fn init(&mut self, res: &ResourceDir, tui: Rc<TuiInterface>) -> Result<()> {
+        // Register the loader for init.lua parent directory
+        self.register_loader(res)?;
+
+        // Get `loom` api table
+        let l = &self.interpreter;
+        let loom: Table = l.globals().get("loom")?;
+
+        /* Loom API module registration
+         *
+         * Early module registration occurs at `LuaInterpreter::new`
+         */
+        let io = l.create_table_from(api::io_module(&l, tui.clone())?)?;
+        let template =
+            l.create_table_from(api::template_module(l, res.clone(), self.history.clone())?)?;
+        let txt = l.create_table_from(api::txt_module(&l)?)?;
+
+        // Register in global api table
+        loom.set("io", io)?;
+        loom.set("template", template)?;
+        loom.set("txt", txt)?;
+
+        self.api_registered = true;
+        Ok(())
     }
 
     /// Run all the registered auto functions to tell which profiles
@@ -129,32 +162,23 @@ impl LuaInterpreter {
             return Err(LoomErr::NoSuchLuaFile(res.init.clone()).into());
         }
 
-        // Register profile dependent API
-        if !self.profile_api_loaded {
-            // Register the loader for init.lua parent directory
-            self.register_loader(res)?;
-
-            // Get `loom` api table
-            let l = &self.interpreter;
-            let loom: Table = l.globals().get("loom")?;
-
-            // Register APIs
-            // Some 'core' APIs are initialized early at `LuaInterpreter::new`
-            let t =
-                l.create_table_from(api::template_module(l, res.clone(), self.history.clone())?)?;
-            loom.set("template", t)?;
-
-            self.profile_api_loaded = true;
-        }
-
         // Get definition from init.lua
         Ok(self.exec::<def::ProfileDef>(&res.init)?)
     }
 
     /// Execute a command given a profile definition (consumes interpreter)
-    pub fn exec_command(self, params: Vec<String>, def: &ProfileDef) -> Result<HistoryRef, LoomErr> {
+    pub fn exec_command(
+        self,
+        params: Vec<String>,
+        def: &ProfileDef,
+    ) -> Result<HistoryRef, LoomErr> {
+        if !self.api_registered {
+            return Err(
+                LoomErr::ApplicationError("Interpreter not initialized!".to_string()).into(),
+            );
+        }
+
         if params.is_empty() {
-            // Get all commands as a list
             return Err(LoomErr::EmptyParameters.into());
         }
 
@@ -181,7 +205,8 @@ impl LuaInterpreter {
                 })?;
 
                 // Call function
-                exec.call::<()>(()).map_err(|e| LoomErr::InterpreterError(e))?;
+                exec.call::<()>(())
+                    .map_err(|e| LoomErr::InterpreterError(e))?;
                 log::debug!("init.lua success for profile");
             } else {
                 // Get list of subcommands, if the command does not have

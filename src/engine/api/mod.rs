@@ -1,6 +1,7 @@
 mod fs;
 mod io;
 mod template;
+mod txt;
 
 // Common imports between modules
 use anyhow::Result;
@@ -22,6 +23,7 @@ pub const LUA_LOOM_PROJECT_ROOT: &str = "LOOM_PROJECT_ROOT";
 pub use fs::module as fs_module;
 pub use io::module as io_module;
 pub use template::module as template_module;
+pub use txt::module as txt_module;
 
 /* PRIVATE FUNCTIONS (Utilities for submodules) */
 
