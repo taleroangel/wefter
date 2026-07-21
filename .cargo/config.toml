@@ -1,7 +1,7 @@
 [env]
-LOOM_PRJ_NAME = "loom"
-LOOM_PRJ_QUALIFIER = "dev"
-LOOM_PRJ_ORG = "taleroangel"
+WEFTER_PRJ_NAME = "wefter"
+WEFTER_PRJ_QUALIFIER = "dev"
+WEFTER_PRJ_ORG = "taleroangel"
 
 [target.x86_64-apple-darwin]
 rustflags = [

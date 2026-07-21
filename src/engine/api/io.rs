@@ -3,7 +3,7 @@ use crate::tui::TuiInterface;
 use std::rc::Rc;
 
 /// Create a table for the 'io' submodule
-pub fn module(l: &Lua, tui: Rc<TuiInterface>) -> Result<LoomModuleTable<'_>> {
+pub fn module(l: &Lua, tui: Rc<TuiInterface>) -> Result<WefterModuleTable<'_>> {
     Ok(vec![
         // Prompt user to input a string
         ("input", {
@@ -21,6 +21,6 @@ pub fn module(l: &Lua, tui: Rc<TuiInterface>) -> Result<LoomModuleTable<'_>> {
             let tui = tui.clone();
             l.create_function(move |_, content: String| Ok(tui.print_markdown(content)))?
         }),
-        /* @loom.embed:io */
+        /* @wefter.embed:io */
     ])
 }

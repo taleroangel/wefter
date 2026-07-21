@@ -1,4 +1,4 @@
-use crate::error::LoomErr;
+use crate::error::WefterErr;
 use mlua::{Error, FromLua, Function, Lua, Result, Table, Value};
 use std::collections::HashMap;
 
@@ -28,11 +28,11 @@ impl FromLua for CommandDef {
     fn from_lua(value: Value, lua: &Lua) -> Result<Self> {
         let def = value
             .as_table()
-            .ok_or_else(|| Error::external(LoomErr::BadProfileDefinition))?;
+            .ok_or_else(|| Error::external(WefterErr::BadProfileDefinition))?;
 
         // At least one of the following should exist
         if !def.contains_key("exec")? && !def.contains_key("subcommand")? {
-            return Err(Error::external(LoomErr::BadProfileDefinition));
+            return Err(Error::external(WefterErr::BadProfileDefinition));
         }
 
         Ok(Self {
@@ -64,7 +64,7 @@ impl FromLua for ProfileDef {
     fn from_lua(value: Value, lua: &Lua) -> Result<Self> {
         let def = value
             .as_table()
-            .ok_or_else(|| Error::external(LoomErr::BadProfileDefinition))?;
+            .ok_or_else(|| Error::external(WefterErr::BadProfileDefinition))?;
 
         let mut cm = CommandMap::new();
         for pair in def.pairs::<String, Value>() {

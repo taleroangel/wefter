@@ -52,7 +52,7 @@ pub fn embed(srcpath: PathBuf, lookup: String, template: PathBuf, tjson: Value) 
     let read = io::BufReader::new(src);
 
     // Create handle to the dst (temp) file
-    let dstpath = srcpath.with_added_extension(".loom");
+    let dstpath = srcpath.with_added_extension(".wefter");
     let dst = fs::File::create(&dstpath)?;
     let mut wrt = io::BufWriter::new(dst);
 

@@ -2,30 +2,30 @@
 
 -- ### Constants ## --
 
---- Loom version string.
+--- Wefter version string.
 --- @type string
 --- @readonly
-LOOM_VERSION = ""
+WEFTER_VERSION = ""
 
 --- Absolute path to the project directory.
 --- @type string
 --- @readonly
-LOOM_PROJECT_ROOT = ""
+WEFTER_PROJECT_ROOT = ""
 
---- Main Loom API namespace exposed by the embedded Lua runtime.
+--- Main Wefter API namespace exposed by the embedded Lua runtime.
 ---
 --- This table is provided by the host Rust runtime and exists
 --- at runtime without being required or imported.
---- @class loom
-loom = {}
+--- @class wefter
+wefter = {}
 
 -- ### FileSystem ### --
 
 --- Filesystem utilities. (early-loading)
 --- This module is available during `auto.lua` and `init.lua` parsing
 ---
---- @class loom.fs
-loom.fs = {}
+--- @class wefter.fs
+wefter.fs = {}
 
 --- Check whether a path exists and is a directory.
 ---
@@ -34,7 +34,7 @@ loom.fs = {}
 ---
 --- @return boolean
 ---     `true` if the path exists and is a directory, `false` otherwise.
-function loom.fs.is_dir(path) end
+function wefter.fs.is_dir(path) end
 
 --- Check whether a path exists and is a regular file.
 ---
@@ -43,7 +43,7 @@ function loom.fs.is_dir(path) end
 ---
 --- @return boolean
 ---     `true` if the path exists and is a file, `false` otherwise.
-function loom.fs.is_file(path) end
+function wefter.fs.is_file(path) end
 
 --- Read a file and get its content as a string.
 ---
@@ -54,7 +54,7 @@ function loom.fs.is_file(path) end
 ---     File contents as string.
 --- @return string|nil
 ---     IO Error, file does not exist?.
-function loom.fs.read_to_string(path) end
+function wefter.fs.read_to_string(path) end
 
 --- Get a list of all items within a directory.
 ---
@@ -65,15 +65,15 @@ function loom.fs.read_to_string(path) end
 ---     Array with paths to items in directory.
 --- @return string|nil
 ---     IO Error, directory does not exist?.
-function loom.fs.read_dir(path) end
+function wefter.fs.read_dir(path) end
 
--- @loom.embed:fs
+-- @wefter.embed:fs
 
 -- ### I/O ### --
 
 --- TUI related I/O.
---- @class loom.io
-loom.io = {}
+--- @class wefter.io
+wefter.io = {}
 
 --- Prompt user to input a string
 ---
@@ -82,7 +82,7 @@ loom.io = {}
 ---
 --- @return string
 ---     User input, fails if no input is given
-function loom.io.input(prompt) end
+function wefter.io.input(prompt) end
 
 --- Prompt user to choose from a range of options, analogous to html <select>
 ---
@@ -94,7 +94,7 @@ function loom.io.input(prompt) end
 ---
 --- @return string
 ---     Selected option, fails if no option was selected
-function loom.io.select(prompt, opts) end
+function wefter.io.select(prompt, opts) end
 
 --- Render a markdown string into terminal.
 ---
@@ -103,15 +103,15 @@ function loom.io.select(prompt, opts) end
 --- 
 --- @return nil
 ---     None. terminates program on error, use `pcall` if required.
-function loom.io.markdown(content) end
+function wefter.io.markdown(content) end
 
--- @loom.embed:io
+-- @wefter.embed:io
 
 -- ### Templates ### --
 
 --- Templating system API.
---- @class loom.template
-loom.template = {}
+--- @class wefter.template
+wefter.template = {}
 
 --- Create a new file from a given template.
 ---
@@ -127,16 +127,16 @@ loom.template = {}
 ---
 --- @return nil
 ---     None. terminates program on error, use `pcall` if required.
-function loom.template.create(destination, template, params) end
+function wefter.template.create(destination, template, params) end
 
 --- Append contents of a template into an already existing file.
 ---
 --- Create insertion points in file by creating a comment with the contents:
----     `@loom.embed` or `@loom.embed:<named>`
+---     `@wefter.embed` or `@wefter.embed:<named>`
 ---
 --- Contents will be appended before an _insertion point_, these are
 --- comment lines on the destination file that contain the following string
---- `@loom.embed:<ipoint>`, use parameter `ipoint` to specify multiple or
+--- `@wefter.embed:<ipoint>`, use parameter `ipoint` to specify multiple or
 --- distinct insertion points, if `ipoint` is not specified (nil), then
 --- the template will be inserted before all of the insertion points.
 ---
@@ -147,10 +147,10 @@ function loom.template.create(destination, template, params) end
 ---     Insertion point specifier, or nil to use them all!
 ---
 ---     i.e
----         "foo" will insert before every "@loom.embed:foo"
----         nil will insert at every "@loom.embed:*"
+---         "foo" will insert before every "@wefter.embed:foo"
+---         nil will insert at every "@wefter.embed:*"
 ---
----     You can also specify an unique insertion point "@loom.embed" and
+---     You can also specify an unique insertion point "@wefter.embed" and
 ---     keep this parameter nil
 ---
 --- @param template string
@@ -163,7 +163,7 @@ function loom.template.create(destination, template, params) end
 ---
 --- @return nil
 ---     None. terminates program on error, use `pcall` if required.
-function loom.template.embed(destination, ipoint, template, params) end
+function wefter.template.embed(destination, ipoint, template, params) end
 
 --- Render a template and get its contents as a string.
 ---
@@ -177,13 +177,13 @@ function loom.template.embed(destination, ipoint, template, params) end
 --- 
 --- @return string
 ---     Rendered template contents. terminates program on error, use `pcall` if required.
-function loom.template.get(template, params) end
+function wefter.template.get(template, params) end
 
--- @loom.embed:template
+-- @wefter.embed:template
 
 --- Text manipulation utilities
---- @class loom.txt
-loom.txt = {}
+--- @class wefter.txt
+wefter.txt = {}
 
 --- Transform a text into `snake_case`.
 --- i.e "foo_bar"
@@ -193,7 +193,7 @@ loom.txt = {}
 --- 
 --- @return string
 ---     String with casing applied
-function loom.txt.to_snake_case(str) end
+function wefter.txt.to_snake_case(str) end
 
 --- Transform a text into `camel_case`.
 ---	i.e "fooBar"
@@ -203,7 +203,7 @@ function loom.txt.to_snake_case(str) end
 --- 
 --- @return string
 ---     String with casing applied
-function loom.txt.to_camel_case(str) end
+function wefter.txt.to_camel_case(str) end
 
 --- Transform a text into `upper_camel_case`.
 --- i.e "FooBar"
@@ -215,7 +215,7 @@ function loom.txt.to_camel_case(str) end
 --- 
 --- @return string
 ---     String with casing applied
-function loom.txt.to_upper_camel_case(str) end
+function wefter.txt.to_upper_camel_case(str) end
 
 --- Transform a text into `pascal_case`.
 --- i.e "FooBar"
@@ -225,7 +225,7 @@ function loom.txt.to_upper_camel_case(str) end
 --- 
 --- @return string
 ---     String with casing applied
-function loom.txt.to_pascal_case(str) end
+function wefter.txt.to_pascal_case(str) end
 
 --- Transform a text into `kebab_case`.
 --- i.e "foo-bar"
@@ -235,6 +235,6 @@ function loom.txt.to_pascal_case(str) end
 --- 
 --- @return string
 ---     String with casing applied
-function loom.txt.to_kebab_case(str) end
+function wefter.txt.to_kebab_case(str) end
 
--- @loom.embed:txt
+-- @wefter.embed:txt

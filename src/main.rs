@@ -1,4 +1,4 @@
-use crate::{error::LoomErr, fs::res::ResourceDir};
+use crate::{error::WefterErr, fs::res::ResourceDir};
 use anyhow::Result;
 use clap::Parser;
 use std::rc::Rc;
@@ -64,7 +64,7 @@ fn try_main() -> Result<()> {
     let resources = fs::res::ResourceDir::load(&dirs)?;
     if resources.is_empty() {
         ui.print_err_no_available_profiles(&dirs);
-        return Err(LoomErr::NoAvailableProfiles.into());
+        return Err(WefterErr::NoAvailableProfiles.into());
     }
 
     // List resources & end program
@@ -81,7 +81,7 @@ fn try_main() -> Result<()> {
         // Get only by name
         resources
             .get_key_value(key)
-            .ok_or_else(|| LoomErr::UnknownProfile(key.clone()))
+            .ok_or_else(|| WefterErr::UnknownProfile(key.clone()))
     } else {
         // Uset auto.lua
         let auto = lua.run_auto(&resources)?;
@@ -89,24 +89,24 @@ fn try_main() -> Result<()> {
 
         match auto.len() {
             // Show error
-            0 => Result::Err(LoomErr::NoProfileSpecified.into()),
+            0 => Result::Err(WefterErr::NoProfileSpecified.into()),
             // Use the only entry available
             1 => auto
                 .first()
                 // Error for when no items are available
-                .ok_or_else(|| LoomErr::NoAvailableProfiles)
+                .ok_or_else(|| WefterErr::NoAvailableProfiles)
                 .map(|k| {
                     // Get resource by key
                     resources
                         .get_key_value(k)
-                        .ok_or_else(|| LoomErr::UnknownProfile(k.clone()))
+                        .ok_or_else(|| WefterErr::UnknownProfile(k.clone()))
                 })
                 .flatten(),
             // Prompt use to choose
             1.. => ui.select("Select a profile", &auto).map(|key| {
                 resources
                     .get_key_value(&key)
-                    .ok_or_else(|| LoomErr::UnknownProfile(key))
+                    .ok_or_else(|| WefterErr::UnknownProfile(key))
             })?,
         }
     }?;
@@ -124,7 +124,7 @@ fn try_main() -> Result<()> {
         return Ok(());
     }
 
-    // Initialize the loom API once the profile has been loaded
+    // Initialize the wefter API once the profile has been loaded
     lua.init(profile.1, ui.clone())?;
 
     // Execute command
@@ -134,7 +134,7 @@ fn try_main() -> Result<()> {
             if !history.borrow().is_empty() {
                 ui.print_history(
                     Rc::into_inner(history)
-                    .ok_or(LoomErr::ApplicationError(
+                    .ok_or(WefterErr::ApplicationError(
                             "Failed to take ownership of 'history'".to_string(),
                     ))?
                     .into_inner(),
@@ -142,7 +142,7 @@ fn try_main() -> Result<()> {
             }
         }
         Err(err) => match err {
-            LoomErr::EmptyParameters => ui.print_err_empty_parameters(profile.0, &pdef),
+            WefterErr::EmptyParameters => ui.print_err_empty_parameters(profile.0, &pdef),
             _ => ui.print_error(&err),
         },
     };

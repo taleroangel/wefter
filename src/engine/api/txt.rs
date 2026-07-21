@@ -2,7 +2,7 @@ use convert_case::{Case, Casing};
 
 use super::*;
 
-pub fn module(l: &Lua) -> Result<LoomModuleTable<'_>> {
+pub fn module(l: &Lua) -> Result<WefterModuleTable<'_>> {
     Ok(vec![
         ("to_snake_case", {
             l.create_function(move |_, str: String| Ok(str.to_case(Case::Snake)))?
@@ -19,6 +19,6 @@ pub fn module(l: &Lua) -> Result<LoomModuleTable<'_>> {
         ("to_kebab_case", {
             l.create_function(move |_, str: String| Ok(str.to_case(Case::Kebab)))?
         }),
-        /* @loom.embed:txt */
+        /* @wefter.embed:txt */
     ])
 }

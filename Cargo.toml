@@ -1,15 +1,15 @@
 [package]
-name = "loom"
+name = "wefter"
 version = "0.2.0-beta"
 authors = ["taleroangel <angelgotalero@outlook.com>"]
 edition = "2024"
 description = "Fully-customizable automation runtime using Lua"
-repository = "https://github.com/taleroangel/loom"
+repository = "https://github.com/taleroangel/wefter"
 license = "LGPL-3.0-only"
 readme = "README.md"
 
 exclude = [
-	".loom/",
+	".wefter/",
 	".cargo/",
 	".nvim.lua",
 	".luarc.json"

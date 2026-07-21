@@ -1,7 +1,7 @@
 use super::{api, def};
 use crate::{
     engine::def::{CommandMap, ProfileDef},
-    error::LoomErr,
+    error::WefterErr,
     fs::{
         dirs::DirCfg,
         hist::{History, HistoryRef},
@@ -33,13 +33,13 @@ impl LuaInterpreter {
     /// Execute a single file as it were a function
     fn exec<T: FromLua>(&mut self, path: &PathBuf) -> Result<T> {
         if !path.is_file() {
-            return Err(LoomErr::NoSuchLuaFile(path.clone()).into());
+            return Err(WefterErr::NoSuchLuaFile(path.clone()).into());
         }
         let file = fs::read_to_string(&path)?;
         let chunk = self.interpreter.load(file);
         let result = chunk
             .call::<T>(())
-            .map_err(|e| LoomErr::BadLuaExec(path.clone(), e))?;
+            .map_err(|e| WefterErr::BadLuaExec(path.clone(), e))?;
         Ok(result)
     }
 
@@ -81,28 +81,28 @@ impl LuaInterpreter {
 
 // Public
 impl LuaInterpreter {
-    /// Create an instance of the interpreter and register the Loom API module
+    /// Create an instance of the interpreter and register the Wefter API module
     pub fn new(dirs: &DirCfg) -> Result<Self> {
         let l = Lua::new();
         let globals = l.globals();
 
         // Set global variables
-        globals.set(api::LUA_LOOM_VERSION.0, api::LUA_LOOM_VERSION.1)?;
-        globals.set(api::LUA_LOOM_PROJECT_ROOT, dirs.root.clone())?;
+        globals.set(api::LUA_WEFTER_VERSION.0, api::LUA_WEFTER_VERSION.1)?;
+        globals.set(api::LUA_WEFTER_PROJECT_ROOT, dirs.root.clone())?;
 
         // Create history for keeping track of IO operations
         let history = HistoryRef::new(RefCell::new(History::new()));
 
-        /* Loom API `early-loading` module registration
+        /* Wefter API `early-loading` module registration
          *
          * Other APIs must be registered at initialization `LuaInterpreter::init(self)`
          */
 
         let fs = l.create_table_from(api::fs_module(&l)?)?;
 
-        // Create global api table `loom` and register it as global
-        let loom = l.create_table_from(vec![("fs", fs)])?;
-        l.globals().set(api::LUA_LOOM_TABLE_NAME, loom)?;
+        // Create global api table `wefter` and register it as global
+        let wefter = l.create_table_from(vec![("fs", fs)])?;
+        l.globals().set(api::LUA_WEFTER_TABLE_NAME, wefter)?;
 
         Ok(Self {
             interpreter: l,
@@ -116,11 +116,11 @@ impl LuaInterpreter {
         // Register the loader for init.lua parent directory
         self.register_loader(res)?;
 
-        // Get `loom` api table
+        // Get `wefter` api table
         let l = &self.interpreter;
-        let loom: Table = l.globals().get("loom")?;
+        let wefter: Table = l.globals().get("wefter")?;
 
-        /* Loom API module registration
+        /* Wefter API module registration
          *
          * Early module registration occurs at `LuaInterpreter::new`
          */
@@ -130,9 +130,9 @@ impl LuaInterpreter {
         let txt = l.create_table_from(api::txt_module(&l)?)?;
 
         // Register in global api table
-        loom.set("io", io)?;
-        loom.set("template", template)?;
-        loom.set("txt", txt)?;
+        wefter.set("io", io)?;
+        wefter.set("template", template)?;
+        wefter.set("txt", txt)?;
 
         self.api_registered = true;
         Ok(())
@@ -159,7 +159,7 @@ impl LuaInterpreter {
     pub fn run_init(&mut self, res: &ResourceDir) -> Result<def::ProfileDef> {
         // Check if file exists
         if !res.init.is_file() {
-            return Err(LoomErr::NoSuchLuaFile(res.init.clone()).into());
+            return Err(WefterErr::NoSuchLuaFile(res.init.clone()).into());
         }
 
         // Get definition from init.lua
@@ -171,15 +171,15 @@ impl LuaInterpreter {
         self,
         params: Vec<String>,
         def: &ProfileDef,
-    ) -> Result<HistoryRef, LoomErr> {
+    ) -> Result<HistoryRef, WefterErr> {
         if !self.api_registered {
             return Err(
-                LoomErr::ApplicationError("Interpreter not initialized!".to_string()).into(),
+                WefterErr::ApplicationError("Interpreter not initialized!".to_string()).into(),
             );
         }
 
         if params.is_empty() {
-            return Err(LoomErr::EmptyParameters.into());
+            return Err(WefterErr::EmptyParameters.into());
         }
 
         // Reference to the current command definition
@@ -190,13 +190,13 @@ impl LuaInterpreter {
             // Get command definition
             let def = cm
                 .get(cmd)
-                .ok_or_else(|| LoomErr::CommandNotFound(cmd.clone()))?;
+                .ok_or_else(|| WefterErr::CommandNotFound(cmd.clone()))?;
 
             // Call only the last command, previous commands are subcommands
             let is_last = (i + 1) == params.len();
             if is_last {
                 let exec = def.exec.clone().ok_or_else(|| {
-                    LoomErr::MissingSubcommand(
+                    WefterErr::MissingSubcommand(
                         cmd.clone(),
                         // During command parsing we make sure either exec or subcommand
                         // exists, so subcommand must exist
@@ -206,7 +206,7 @@ impl LuaInterpreter {
 
                 // Call function
                 exec.call::<()>(())
-                    .map_err(|e| LoomErr::InterpreterError(e))?;
+                    .map_err(|e| WefterErr::InterpreterError(e))?;
                 log::debug!("init.lua success for profile");
             } else {
                 // Get list of subcommands, if the command does not have
@@ -215,7 +215,7 @@ impl LuaInterpreter {
                 let subcommands =
                     def.subcommand
                         .as_ref()
-                        .ok_or_else(|| LoomErr::SubcommandNotFound {
+                        .ok_or_else(|| WefterErr::SubcommandNotFound {
                             command: cmd.clone(),
                             // Get next command
                             subcommand: params[i + 1].clone(),

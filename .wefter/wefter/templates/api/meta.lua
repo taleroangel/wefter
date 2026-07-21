@@ -5,4 +5,4 @@
 --- 
 --- @return nil
 ---     Return value description
-function loom.{{ module }}.{{ name }}(foo) end
+function wefter.{{ module }}.{{ name }}(foo) end

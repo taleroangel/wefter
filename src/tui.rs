@@ -1,7 +1,7 @@
 use crate::{
     cli::Params,
     engine::{CommandMap, ProfileDef},
-    error::LoomErr,
+    error::WefterErr,
     fs::{self, dirs::DirCfg, hist::HistoryAction, res::ResourceDirTable},
 };
 use anyhow::Result;
@@ -13,10 +13,10 @@ use termimad::{
     minimad::{OwningTemplateExpander, TextTemplate},
 };
 
-/// loom.d.lua API documentation
+/// wefter.d.lua API documentation
 const LUA_API_META: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
-    "/static/lua/loom.d.lua"
+    "/static/lua/wefter.d.lua"
 ));
 
 /// Template for the help description
@@ -35,19 +35,19 @@ const PROFILE_LIST_TEMPLATE_MD: &str = include_str!(concat!(
     "/static/cli/profile_list.md"
 ));
 
-/// Markdown template for [LoomErr] generic error
+/// Markdown template for [WefterErr] generic error
 const ERRORS_GENERIC_TEMPLATE_MD: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/static/errors/generic_error.md"
 ));
 
-/// Markdown template for [LoomErr::NoAvailableProfiles] error
+/// Markdown template for [WefterErr::NoAvailableProfiles] error
 const ERRORS_NO_AVAILABLE_PROFILES_TEMPLATE_MD: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/static/errors/no_available_profiles.md"
 ));
 
-/// Markdown template for [LoomErr::EmptyParameters] error
+/// Markdown template for [WefterErr::EmptyParameters] error
 const ERRORS_EMPTY_PARAMETERS_TEMPLATE_MD: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/static/errors/empty_parameters.md"
@@ -83,7 +83,7 @@ impl TuiInterface {
         self.skin.print_text(&content);
     }
 
-    /// Print `loom.d.lua` file
+    /// Print `wefter.d.lua` file
     pub fn print_lua_meta(&self) {
         println!("{}", LUA_API_META)
     }
@@ -132,7 +132,7 @@ impl TuiInterface {
     }
 
     /// Show error
-    pub fn print_error(&self, err: &LoomErr) {
+    pub fn print_error(&self, err: &WefterErr) {
         // Use static markdown template
         let mdtemplate = TextTemplate::from(ERRORS_GENERIC_TEMPLATE_MD);
         let mut mdexpander = OwningTemplateExpander::new();
@@ -142,25 +142,25 @@ impl TuiInterface {
         self.skin.print_owning_expander(&mdexpander, &mdtemplate);
     }
 
-    /// Print documentation for [LoomErr::NoAvailableProfiles]
+    /// Print documentation for [WefterErr::NoAvailableProfiles]
     pub fn print_err_no_available_profiles(&self, dirs: &DirCfg) {
         // Use static markdown template
         let mdtemplate = TextTemplate::from(ERRORS_NO_AVAILABLE_PROFILES_TEMPLATE_MD);
         let mut mdexpander = OwningTemplateExpander::new();
 
-        mdexpander.set("error-message", LoomErr::NoAvailableProfiles.to_string());
+        mdexpander.set("error-message", WefterErr::NoAvailableProfiles.to_string());
         mdexpander.set("path", format!("{:?}", dirs.data));
 
         self.skin.print_owning_expander(&mdexpander, &mdtemplate);
     }
 
-    /// Print documentation for [LoomErr::EmptyParameters]
+    /// Print documentation for [WefterErr::EmptyParameters]
     pub fn print_err_empty_parameters(&self, profile: &String, def: &ProfileDef) {
         // Use static markdown template
         let mdtemplate = TextTemplate::from(ERRORS_EMPTY_PARAMETERS_TEMPLATE_MD);
         let mut mdexpander = OwningTemplateExpander::new();
 
-        mdexpander.set("error-message", LoomErr::EmptyParameters.to_string());
+        mdexpander.set("error-message", WefterErr::EmptyParameters.to_string());
 
         self.skin.print_owning_expander(&mdexpander, &mdtemplate);
 

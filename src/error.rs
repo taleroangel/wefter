@@ -1,9 +1,9 @@
 use std::path::PathBuf;
 use thiserror::Error;
 
-/// Loom-specific errors
+/// Wefter-specific errors
 #[derive(Debug, Error)]
-pub enum LoomErr {
+pub enum WefterErr {
     #[error("Cannot find system directories ($HOME/.config and $HOME/.local/share)")]
     FilesystemError,
 

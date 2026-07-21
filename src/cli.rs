@@ -42,7 +42,7 @@ pub struct Params {
     #[arg(short, long)]
     pub help: bool,
 
-    /// Print **Lua Definition File** `loom.d.lua` directly to terminal
+    /// Print **Lua Definition File** `wefter.d.lua` directly to terminal
     #[arg(long)]
     pub meta: bool,
 
@@ -55,7 +55,7 @@ pub struct Params {
     pub root: Option<PathBuf>,
 
     /// Folder to lookup for local profiles
-    #[arg(short = 'd', long, default_value = ".loom")]
+    #[arg(short = 'd', long, default_value = ".wefter")]
     pub local_resources: PathBuf,
 
     /// List available profiles *(Profiles are read from resource directories)*

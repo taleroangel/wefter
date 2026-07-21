@@ -1,5 +1,5 @@
 use super::dirs::DirCfg;
-use crate::error::LoomErr;
+use crate::error::WefterErr;
 use anyhow::{Result, anyhow};
 use std::collections::hash_map::HashMap;
 use std::fs;
@@ -41,7 +41,7 @@ impl ResourceDir {
 
         // init.lua is required
         if !luainit.is_file() {
-            return Err(LoomErr::InvalidResource(luainit).into());
+            return Err(WefterErr::InvalidResource(luainit).into());
         }
 
         // Get path to resources
@@ -126,7 +126,7 @@ impl ResourceDir {
     pub fn build_template_path(&self, path: PathBuf) -> Result<PathBuf> {
         let p = self.templates.join(path);
         if !p.is_file() {
-            return Err(LoomErr::TemplateNotFound(p).into());
+            return Err(WefterErr::TemplateNotFound(p).into());
         }
 
         Ok(p)

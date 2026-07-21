@@ -1,4 +1,4 @@
 {
-    "workspace.library": ["./static/lua/loom.d.lua"],
-    "diagnostics.globals": ["vim", "loom", "LOOM_VERSION", "LOOM_PROJECT_ROOT"]
+    "workspace.library": ["./static/lua/wefter.d.lua"],
+    "diagnostics.globals": ["vim", "wefter", "WEFTER_VERSION", "WEFTER_PROJECT_ROOT"]
 }

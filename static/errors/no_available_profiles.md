@@ -15,8 +15,8 @@ Build your first profile by creating a directory with the structure mentioned ab
 
 `${path}`
 
-Or use local profiles by creating a `.loom` directory on the current project.
+Or use local profiles by creating a `.wefter` directory on the current project.
 
-Visit (https://github.com/taleroangel/loom) for more documentation on creating profiles.
+Visit (https://github.com/taleroangel/wefter) for more documentation on creating profiles.
 
 

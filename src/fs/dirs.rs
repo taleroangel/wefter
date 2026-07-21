@@ -1,21 +1,21 @@
-use crate::error::LoomErr;
+use crate::error::WefterErr;
 use anyhow::Result;
 use directories::ProjectDirs;
 use std::{env, fs, path::PathBuf};
 
-const APP_QUALIFIER: &str = env!("LOOM_PRJ_QUALIFIER");
-const APP_ORGANIZATION: &str = env!("LOOM_PRJ_ORG");
-const APP_NAME: &str = env!("LOOM_PRJ_NAME");
+const APP_QUALIFIER: &str = env!("WEFTER_PRJ_QUALIFIER");
+const APP_ORGANIZATION: &str = env!("WEFTER_PRJ_ORG");
+const APP_NAME: &str = env!("WEFTER_PRJ_NAME");
 
 /// Directories configuration, contains paths to all the directories
-/// loom requires to load templates
+/// wefter requires to load templates
 #[derive(Debug)]
 pub struct DirCfg {
     /// Project working directory
     pub root: PathBuf,
-    /// Directory for app configurations ($HOME/.config/loom)
+    /// Directory for app configurations ($HOME/.config/wefter)
     pub cfg: PathBuf,
-    /// Directory for configurations & templates ($HOME/.local/share/loom)
+    /// Directory for configurations & templates ($HOME/.local/share/wefter)
     pub data: PathBuf,
     /// Directory for (project) local data directory
     pub local: Option<PathBuf>,
@@ -26,7 +26,7 @@ impl DirCfg {
     pub fn new() -> Result<Self> {
         // Get project directories (OS-agnostic)
         let prjdir = ProjectDirs::from(APP_QUALIFIER, APP_ORGANIZATION, APP_NAME)
-            .ok_or(LoomErr::FilesystemError)?;
+            .ok_or(WefterErr::FilesystemError)?;
 
         Ok(Self {
             root: std::env::current_dir()?,
@@ -56,7 +56,7 @@ impl DirCfg {
     /// Update current working directory location
     pub fn update_working_dir(&mut self, newdir: PathBuf) -> Result<()> {
         if !newdir.is_dir() {
-            return Err(LoomErr::BadRootDirectory(newdir).into());
+            return Err(WefterErr::BadRootDirectory(newdir).into());
         }
 
         env::set_current_dir(&newdir)?;
@@ -67,7 +67,7 @@ impl DirCfg {
     /// Change the data directory
     pub fn update_data_dir(&mut self, newdir: PathBuf) -> Result<()> {
         if !newdir.is_dir() {
-            return Err(LoomErr::NoSuchResourceDirectory(newdir).into());
+            return Err(WefterErr::NoSuchResourceDirectory(newdir).into());
         }
 
         self.data = newdir;
@@ -93,6 +93,6 @@ impl DirCfg {
         }
 
         // Path doesn't exist
-        Err(LoomErr::NoSuchResourceDirectory(wd).into())
+        Err(WefterErr::NoSuchResourceDirectory(wd).into())
     }
 }

@@ -7,17 +7,17 @@ mod txt;
 use anyhow::Result;
 use mlua::{Function, IntoLua, Lua, LuaSerdeExt, Table, Value};
 
-/// Type of the Loom api table
-pub type LoomModuleTable<'a> = Vec<(&'a str, Function)>;
+/// Type of the Wefter api table
+pub type WefterModuleTable<'a> = Vec<(&'a str, Function)>;
 
-/// Name for the Loom api
-pub const LUA_LOOM_TABLE_NAME: &str = "loom";
+/// Name for the Wefter api
+pub const LUA_WEFTER_TABLE_NAME: &str = "wefter";
 
-/// Loom version as constant in lua scripts
-pub const LUA_LOOM_VERSION: (&str, &str) = ("LOOM_VERSION", env!("CARGO_PKG_VERSION"));
+/// Wefter version as constant in lua scripts
+pub const LUA_WEFTER_VERSION: (&str, &str) = ("WEFTER_VERSION", env!("CARGO_PKG_VERSION"));
 
 /// Name for a constant that contains the absolute path to the project root
-pub const LUA_LOOM_PROJECT_ROOT: &str = "LOOM_PROJECT_ROOT";
+pub const LUA_WEFTER_PROJECT_ROOT: &str = "WEFTER_PROJECT_ROOT";
 
 /* Re-export modules */
 pub use fs::module as fs_module;

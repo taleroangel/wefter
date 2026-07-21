@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::{fs, path::PathBuf};
 
 /// Configuration filename
-const CONFIGURATION_FILENAME: &str = "loom.toml";
+const CONFIGURATION_FILENAME: &str = "wefter.toml";
 
 /// App configuration file structure
 #[derive(Debug, Deserialize, Serialize)]
@@ -28,7 +28,7 @@ impl CfgFile {
         cfg
     }
 
-    /// Create the configuration file (loom.toml) if it doesn't exist already
+    /// Create the configuration file (wefter.toml) if it doesn't exist already
     pub fn create_if_not_exists(dircfg: &DirCfg) -> Result<()> {
         // Get file path
         let fpath = CfgFile::get_default_path(dircfg);

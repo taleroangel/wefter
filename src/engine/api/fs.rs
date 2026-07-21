@@ -1,15 +1,15 @@
 use super::*;
-use crate::fs as loomfs;
+use crate::fs as wefterfs;
 use std::{fs, path::PathBuf};
 
 /// Create a table for the 'fs' submodule
-pub fn module(l: &Lua) -> Result<LoomModuleTable<'_>> {
+pub fn module(l: &Lua) -> Result<WefterModuleTable<'_>> {
     Ok(vec![
         // Check if a path exists and is a regular file
         (
             "is_file",
             l.create_function(|_, path: PathBuf| {
-                log::debug!("[loom.fs.is_file] File={:?}", path);
+                log::debug!("[wefter.fs.is_file] File={:?}", path);
                 Result::Ok(path.is_file())
             })?,
         ),
@@ -17,7 +17,7 @@ pub fn module(l: &Lua) -> Result<LoomModuleTable<'_>> {
         (
             "is_dir",
             l.create_function(|_, path: PathBuf| {
-                log::debug!("[loom.fs.is_dir] Directory={:?}", path);
+                log::debug!("[wefter.fs.is_dir] Directory={:?}", path);
                 Result::Ok(path.is_dir())
             })?,
         ),
@@ -25,7 +25,7 @@ pub fn module(l: &Lua) -> Result<LoomModuleTable<'_>> {
         (
             "read_to_string",
             l.create_function(|lua, path: PathBuf| {
-                log::debug!("[loom.fs.read_to_string] File={:?}", path);
+                log::debug!("[wefter.fs.read_to_string] File={:?}", path);
                 wrap_error_tuple(lua, fs::read_to_string(path))
             })?,
         ),
@@ -33,10 +33,10 @@ pub fn module(l: &Lua) -> Result<LoomModuleTable<'_>> {
         (
             "read_dir",
             l.create_function(|lua, path: PathBuf| {
-                log::debug!("[loom.fs.read_dir] Directory={:?}", path);
-                wrap_error_tuple(lua, loomfs::utils::read_directory(&path))
+                log::debug!("[wefter.fs.read_dir] Directory={:?}", path);
+                wrap_error_tuple(lua, wefterfs::utils::read_directory(&path))
             })?,
         ),
-        /* @loom.embed:fs */
+        /* @wefter.embed:fs */
     ])
 }
