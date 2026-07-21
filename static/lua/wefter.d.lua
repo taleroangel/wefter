@@ -195,6 +195,26 @@ wefter.txt = {}
 ---     String with casing applied
 function wefter.txt.to_snake_case(str) end
 
+--- Transform a text into `constant_case`.
+--- i.e "FOO_BAR"
+---
+--- @param str string
+---     String to apply casing to
+--- 
+--- @return string
+---     String with casing applied
+function wefter.txt.to_constant_case(str) end
+
+--- Transform a text into `ada_case`.
+--- i.e "Foo_Bar"
+---
+--- @param str string
+---     String to apply casing to
+--- 
+--- @return string
+---     String with casing applied
+function wefter.txt.to_ada_case(str) end
+
 --- Transform a text into `camel_case`.
 ---	i.e "fooBar"
 ---
@@ -236,5 +256,25 @@ function wefter.txt.to_pascal_case(str) end
 --- @return string
 ---     String with casing applied
 function wefter.txt.to_kebab_case(str) end
+
+--- Transform a text into `train_case`.
+--- i.e "Foo-Bar"
+---
+--- @param str string
+---     String to apply casing to
+--- 
+--- @return string
+---     String with casing applied
+function wefter.txt.to_train_case(str) end
+
+--- Transform a text into `cobol_case`.
+--- i.e "FOO-BAR"
+---
+--- @param str string
+---     String to apply casing to
+--- 
+--- @return string
+---     String with casing applied
+function wefter.txt.to_cobol_case(str) end
 
 -- @wefter.embed:txt
