@@ -176,12 +176,20 @@ impl TuiInterface {
         for action in history {
             self.skin.print_inline(
                 match action {
-                    HistoryAction::CreateFile(path) => format!("*[CREATED]* {:?}", path),
+                    HistoryAction::CreateFile(path) => {
+                        format!("*[CREATED]* {:?}", path)
+                    }
                     HistoryAction::ModifyFile(path, point) => {
                         format!("*[MODIFIED at {}]* {:?}", point, path)
                     }
                     HistoryAction::CreateDirectory(path) => {
                         format!("*[CREATED]* (directory) {:?}", path)
+                    }
+                    HistoryAction::FileRenamed { previous, new } => {
+                        format!("*[RENAMED]* file {:?} to {:?}", previous, new.file_name())
+                    }
+                    HistoryAction::FileMoved { previous, new } => {
+                        format!("*[MOVED]* file {:?} to {:?}", previous, new)
                     }
                 }
                 .as_str(),

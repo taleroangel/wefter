@@ -49,7 +49,7 @@ pub fn module(l: &Lua, history: HistoryRef) -> Result<WefterModuleTable<'_>> {
                         history
                             .borrow_mut()
                             .push(HistoryAction::CreateDirectory(path));
-                        Value::Nil 
+                        Value::Nil
                     }
                     Result::Err(err) => err.to_string().into_lua(lua)?,
                 })
@@ -61,12 +61,42 @@ pub fn module(l: &Lua, history: HistoryRef) -> Result<WefterModuleTable<'_>> {
                 Ok(match fs::File::create(&path) {
                     Result::Ok(_) => {
                         // Save action in history
-                        history
-                            .borrow_mut()
-                            .push(HistoryAction::CreateFile(path));
+                        history.borrow_mut().push(HistoryAction::CreateFile(path));
                         Value::Nil
                     }
                     Result::Err(err) => err.to_string().into_lua(lua)?,
+                })
+            })?
+        }),
+        ("rename", {
+            let history = history.clone();
+            l.create_function(move |lua, (file, newname): (PathBuf, String)| {
+                let newfile = file.as_path().with_file_name(newname);
+                Ok(match fs::rename(&file, &newfile) {
+                    Result::Ok(_) => {
+                        history.borrow_mut().push(HistoryAction::FileRenamed {
+                            previous: file,
+                            new: newfile.clone(),
+                        });
+                        // Return success value and nil for error
+                        (newfile.to_path_buf().into_lua(lua)?, Value::Nil)
+                    }
+                    Result::Err(err) => (Value::Nil, err.to_string().into_lua(lua)?),
+                })
+            })?
+        }),
+        ("move", {
+            l.create_function(move |lua, (file, dir): (PathBuf, PathBuf)| {
+                Ok(match wefterfs::utils::move_to_directory(&file, &dir) {
+                    Result::Ok(new) => {
+                        history.borrow_mut().push(HistoryAction::FileMoved {
+                            previous: file,
+                            new: new.clone(),
+                        });
+                        // Return success value and nil for error
+                        (new.into_lua(lua)?, Value::Nil)
+                    }
+                    Result::Err(err) => (Value::Nil, err.to_string().into_lua(lua)?),
                 })
             })?
         }),

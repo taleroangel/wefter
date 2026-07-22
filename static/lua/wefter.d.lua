@@ -86,6 +86,34 @@ function wefter.fs.mkdir(path) end
 ---     IO error if operation fails, nil if success
 function wefter.fs.mkfile(path) end
 
+--- Rename a single file.
+---
+--- @param file string
+---		Absolute or relative (to project root) path to the file to be renamed
+---
+--- @param newname string
+---		New filename (including extension). Just the filename, this function will leave the file in the same directory it is already in, do not use this function to move files around, use `fs.move` instead.
+---
+--- @return string|nil
+---     Path to the renamed file
+--- @return string|nil
+---     IO Error
+function wefter.fs.rename(file, newname) end
+
+--- Move a file to new directory
+---
+--- @param file string
+---		Absolute or relative (to project root) path to the file to be renamed
+---
+--- @param dir string
+---		Path to the new directory for the file (must be a directory and it must exist)
+---
+--- @return string|nil
+---     New path to the file
+--- @return string|nil
+---     IO Error, target directory does not exist?
+function wefter.fs.rename(file, dir) end
+
 -- @wefter.embed:fs
 
 -- ### I/O ### --

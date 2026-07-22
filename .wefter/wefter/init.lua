@@ -29,7 +29,7 @@ return {
 						["integer (unsigned)"] = { rust = "u32", lua = "integer" },
 						["boolean"] = { rust = "bool", lua = "boolean" },
 						["string"] = { rust = "String", lua = "string" },
-						["string (path)"] = { rust = "Path", lua = "string" },
+						["string (path)"] = { rust = "PathBuf", lua = "string" },
 						["table"] = { rust = "Table", lua = "table" },
 						["function"] = { rust = "Function", lua = "function" },
 						["any"] = { rust = "Any", lua = "any" }
