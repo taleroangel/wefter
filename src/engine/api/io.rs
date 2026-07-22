@@ -17,6 +17,20 @@ pub fn module(l: &Lua, tui: Rc<TuiInterface>) -> Result<WefterModuleTable<'_>> {
                 Ok(tui.select(&prompt, &opts)?)
             })?
         }),
+        ("int", {
+            let tui = tui.clone();
+            l.create_function(
+                move |_, (prompt, min, max): (String, Option<i32>, Option<i32>)| {
+                    Ok(tui.integer(&prompt, min.unwrap_or(i32::MIN), max.unwrap_or(i32::MAX)))
+                },
+            )?
+        }),
+        ("confirm", {
+            let tui = tui.clone();
+            l.create_function(move |_, prompt: String| {
+                Ok(tui.confirm(&prompt))
+            })?
+        }),
         ("markdown", {
             let tui = tui.clone();
             l.create_function(move |_, content: String| Ok(tui.print_markdown(content)))?

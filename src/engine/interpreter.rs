@@ -97,8 +97,7 @@ impl LuaInterpreter {
          *
          * Other APIs must be registered at initialization `LuaInterpreter::init(self)`
          */
-
-        let fs = l.create_table_from(api::fs_module(&l)?)?;
+        let fs = l.create_table_from(api::fs_module(&l, history.clone())?)?;
 
         // Create global api table `wefter` and register it as global
         let wefter = l.create_table_from(vec![("fs", fs)])?;

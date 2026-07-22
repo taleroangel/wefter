@@ -176,9 +176,12 @@ impl TuiInterface {
         for action in history {
             self.skin.print_inline(
                 match action {
-                    HistoryAction::CreateFile(path) => format!("**[CREATED]** {:?}", path),
+                    HistoryAction::CreateFile(path) => format!("*[CREATED]* {:?}", path),
                     HistoryAction::ModifyFile(path, point) => {
                         format!("*[MODIFIED at {}]* {:?}", point, path)
+                    }
+                    HistoryAction::CreateDirectory(path) => {
+                        format!("*[CREATED]* (directory) {:?}", path)
                     }
                 }
                 .as_str(),
@@ -252,5 +255,39 @@ impl TuiInterface {
     /// Prompt user for text input
     pub fn input(&self, prompt: String) -> Result<String> {
         Ok(inquire::Text::new(&format!("{}:", prompt)).prompt()?)
+    }
+
+    /// Prompt the user for a number
+    pub fn integer(&self, prompt: &str, min: i32, max: i32) -> Result<i32> {
+        Ok(inquire::CustomType::<i32>::new(&format!(
+            "{} (Between {} and {}):",
+            prompt,
+            if min == i32::MIN {
+                "MIN".to_string()
+            } else {
+                min.to_string()
+            },
+            if max == i32::MAX {
+                "MAX".to_string()
+            } else {
+                max.to_string()
+            },
+        ))
+        .with_error_message(&format!("Please enter a valid integer between"))
+        .with_validator(move |val: &i32| {
+            Ok(if *val >= min && *val <= max {
+                inquire::validator::Validation::Valid
+            } else {
+                inquire::validator::Validation::Invalid(inquire::validator::ErrorMessage::Custom(
+                    format!("Value must be between {} and {}", min, max),
+                ))
+            })
+        })
+        .prompt()?)
+    }
+
+    /// Prompt for a y/n response
+    pub fn confirm(&self, prompt: &str) -> Result<bool> {
+        Ok(inquire::Confirm::new(prompt).with_default(true).prompt()?)
     }
 }

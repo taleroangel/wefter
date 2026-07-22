@@ -1,9 +1,12 @@
 use super::*;
-use crate::fs as wefterfs;
+use crate::fs::{
+    self as wefterfs,
+    hist::{HistoryAction, HistoryRef},
+};
 use std::{fs, path::PathBuf};
 
 /// Create a table for the 'fs' submodule
-pub fn module(l: &Lua) -> Result<WefterModuleTable<'_>> {
+pub fn module(l: &Lua, history: HistoryRef) -> Result<WefterModuleTable<'_>> {
     Ok(vec![
         // Check if a path exists and is a regular file
         (
@@ -37,6 +40,36 @@ pub fn module(l: &Lua) -> Result<WefterModuleTable<'_>> {
                 wrap_error_tuple(lua, wefterfs::utils::read_directory(&path))
             })?,
         ),
+        ("mkdir", {
+            let history = history.clone();
+            l.create_function(move |lua, path: PathBuf| {
+                Ok(match fs::create_dir(&path) {
+                    Result::Ok(_) => {
+                        // Save action in history
+                        history
+                            .borrow_mut()
+                            .push(HistoryAction::CreateDirectory(path));
+                        Value::Nil 
+                    }
+                    Result::Err(err) => err.to_string().into_lua(lua)?,
+                })
+            })?
+        }),
+        ("mkfile", {
+            let history = history.clone();
+            l.create_function(move |lua, path: PathBuf| {
+                Ok(match fs::File::create(&path) {
+                    Result::Ok(_) => {
+                        // Save action in history
+                        history
+                            .borrow_mut()
+                            .push(HistoryAction::CreateFile(path));
+                        Value::Nil
+                    }
+                    Result::Err(err) => err.to_string().into_lua(lua)?,
+                })
+            })?
+        }),
         /* @wefter.embed:fs */
     ])
 }

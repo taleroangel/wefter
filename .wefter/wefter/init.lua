@@ -23,12 +23,50 @@ return {
 						end
 					end
 
+					-- Parameters type (Lua <-> Rust)
+					local ptypes = {
+						["integer (signed)"] = { rust = "i32", lua = "integer" },
+						["integer (unsigned)"] = { rust = "u32", lua = "integer" },
+						["boolean"] = { rust = "bool", lua = "boolean" },
+						["string"] = { rust = "String", lua = "string" },
+						["string (path)"] = { rust = "Path", lua = "string" },
+						["table"] = { rust = "Table", lua = "table" },
+						["function"] = { rust = "Function", lua = "function" },
+						["any"] = { rust = "Any", lua = "any" }
+					}
+
+					-- Get parameter type as user options
+					local ptypes_options = {}
+					for type, _ in pairs(ptypes) do
+						table.insert(ptypes_options, type)
+					end
+
 					-- Show all API modules in a list and let the user pick
 					local mod = wefter.io.select("Select a module", entries)
 
 					-- Get function parameters as text from the user
 					local name = wefter.io.input("Name for the function")
 					local desc = wefter.io.input("Function description")
+
+					-- Get return data	
+					local ret = {
+						description = wefter.io.input("Function return description"),
+						type = ptypes[wefter.io.select("Function return type", ptypes_options)]
+					}
+
+					-- Get function parameters
+					local n_params = wefter.io.int("Number of parameters", 0)
+					local params = {};
+					for i = 1, n_params do
+						-- Ask for parameter name
+						local pname = wefter.io.input("Parameter (" .. i .. ") name")
+						-- Ask for parameter type
+						local ptype = wefter.io.select("Parameter (" .. i .. ") type", ptypes_options)
+						-- Ask for parameter description
+						local pdesc = wefter.io.input("Parameter (" .. i .. ") description")
+						-- Insert into parameters table
+						table.insert(params, { name = pname, type = ptypes[ptype], description = pdesc })
+					end
 
 					-- Insert contents of template `templates/api/meta.lua`
 					-- into file `static/lua/wefter.d.lua`
@@ -37,6 +75,8 @@ return {
 						module = mod,
 						description = desc,
 						name = name,
+						params = params,
+						ret = ret
 					})
 
 					-- Insert contents of template `templates/api/api.rs`
@@ -49,6 +89,8 @@ return {
 						{
 							module = mod,
 							name = name,
+							params = params,
+							ret = ret,
 						})
 				end,
 			},
@@ -76,6 +118,8 @@ return {
 
 					-- Render markdown to screen
 					wefter.io.markdown(template)
+
+					wefter.template.create("foo/bar/destination.rs", "api/api.rs", { module = "foo", name = "bar" })
 				end
 			}
 		},

@@ -1,8 +1,10 @@
 --- {{ description }}.
 ---
---- @param foo any
----     Some foo bar
---- 
---- @return nil
----     Return value description
-function wefter.{{ module }}.{{ name }}(foo) end
+{%- for param in params %}
+--- @param {{ param.name }} {{ param.type.lua }}
+---		{{ param.description }}
+---
+{%- endfor %}
+--- @return {{ ret.type.lua }}
+---     {{ ret.description }}
+function wefter.{{ module }}.{{ name }}({% for param in params %}{{ param.name }}{% if not loop.last %}, {% endif %}{% endfor %}) end

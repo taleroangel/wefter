@@ -67,6 +67,25 @@ function wefter.fs.read_to_string(path) end
 ---     IO Error, directory does not exist?.
 function wefter.fs.read_dir(path) end
 
+--- Create a new directory.
+---
+--- @param path string
+---		Absolute or relative (to project root) path for the directory.
+--- 
+--- @return string
+---     IO error if operation fails, nil if success
+function wefter.fs.mkdir(path) end
+
+--- Create a new file.
+---
+--- @param path string
+---		Absolute or relative (to project root) path for the file.
+---		Will fail if parent directory does not exist
+--- 
+--- @return string
+---     IO error if operation fails, nil if success
+function wefter.fs.mkfile(path) end
+
 -- @wefter.embed:fs
 
 -- ### I/O ### --
@@ -96,6 +115,30 @@ function wefter.io.input(prompt) end
 ---     Selected option, fails if no option was selected
 function wefter.io.select(prompt, opts) end
 
+--- Prompt the user for a numeric input (Integer only).
+---
+--- @param prompt string
+---     Message to show on the input prompt
+---
+--- @param min integer|nil
+---     Minimum value (default none)
+---
+--- @param max integer|nil
+---     Maximum value (default none)
+--- 
+--- @return integer
+---     User selected integer, fails if no input is given
+function wefter.io.int(prompt, min, max) end
+
+--- Confirm and action (y/n prompt).
+---
+--- @param prompt string
+---     Message to show on the input prompt
+--- 
+--- @return boolean
+---     True for (y) and False for (n), fails if no input is given
+function wefter.io.confirm(prompt) end
+
 --- Render a markdown string into terminal.
 ---
 --- @param content string
@@ -113,13 +156,28 @@ function wefter.io.markdown(content) end
 --- @class wefter.template
 wefter.template = {}
 
---- Create a new file from a given template.
+--- Render a template file and get its contents as a string.
+---
+--- @param template string
+---     Template file path (must be relative to profile `templates` directory)
+---
+---     i.e "foo/bar.txt" resolves to "{profileDir}/foo/bar.txt"
+---
+--- @param params table
+---     json-like parameters for the template
+--- 
+--- @return string
+---     Rendered template contents. terminates program on error, use `pcall` if required.
+function wefter.template.get(template, params) end
+
+--- Create a new file from a given template file.
 ---
 --- @param destination string
 ---     New file absolute or relative (to project root)
+---     Parent directories will be created if they don't exist!
 ---
 --- @param template string
----     Template path (must be relative to profile `templates` directory)
+---     Template file path (must be relative to profile `templates` directory)
 ---     i.e "foo/bar.txt" resolves to "{profileDir}/foo/bar.txt"
 ---
 --- @param params table
@@ -129,7 +187,26 @@ wefter.template = {}
 ---     None. terminates program on error, use `pcall` if required.
 function wefter.template.create(destination, template, params) end
 
---- Append contents of a template into an already existing file.
+--- Create a file from a given inline template string.
+---	An alternative to `wefter.template.create` with inline templates
+---
+--- @see wefter.template.create
+---
+--- @param destination string
+---     New file absolute or relative (to project root)
+---     Parent directories will be created if they don't exist!
+---
+--- @param template_str string
+---     Template as a raw string
+---
+--- @param params table
+---     json-like parameters for the template
+---
+--- @return nil
+---     None. terminates program on error, use `pcall` if required.
+function wefter.template.create_inline(destination, template_str, params) end
+
+--- Append contents of a template file into an already existing file.
 ---
 --- Create insertion points in file by creating a comment with the contents:
 ---     `@wefter.embed` or `@wefter.embed:<named>`
@@ -154,7 +231,7 @@ function wefter.template.create(destination, template, params) end
 ---     keep this parameter nil
 ---
 --- @param template string
----     Template path (must be relative to profile `templates` directory)
+---     Template file path (must be relative to profile `templates` directory)
 ---
 ---     i.e "foo/bar.txt" resolves to "{profileDir}/foo/bar.txt"
 ---
@@ -165,19 +242,26 @@ function wefter.template.create(destination, template, params) end
 ---     None. terminates program on error, use `pcall` if required.
 function wefter.template.embed(destination, ipoint, template, params) end
 
---- Render a template and get its contents as a string.
+--- Append contents of a template string into an already existing file.
+--- An alternative to `wefter.template.embed` with inline templates
 ---
---- @param template string
----     Template path (must be relative to profile `templates` directory)
+--- @see wefter.template.embed on how to create insertion points.-
 ---
----     i.e "foo/bar.txt" resolves to "{profileDir}/foo/bar.txt"
+--- @param destination string
+---     Filepath absolute or relative (to project root)
+---
+--- @param ipoint string|nil
+---     Insertion point specifier
+---
+--- @param template_str string
+---     Template as a raw string
 ---
 --- @param params table
 ---     json-like parameters for the template
---- 
---- @return string
----     Rendered template contents. terminates program on error, use `pcall` if required.
-function wefter.template.get(template, params) end
+---
+--- @return nil
+---     None. terminates program on error, use `pcall` if required.
+function wefter.template.embed_inline(destination, ipoint, template_str, params) end
 
 -- @wefter.embed:template
 

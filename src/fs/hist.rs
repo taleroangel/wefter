@@ -7,6 +7,9 @@ pub enum HistoryAction {
 
     /// Path to the file modified and insertion point string
     ModifyFile(PathBuf, String),
+
+    /// Path to the directory created
+    CreateDirectory(PathBuf),
 }
 
 /// Ordered list of actions on the file system
