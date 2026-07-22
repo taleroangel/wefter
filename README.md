@@ -1,6 +1,14 @@
 # 🧵 Wefter
 **Wefter** is a profile-driven automation runtime that lets you use Lua to define _cli_ command trees that perform structured, template-based code generation, embedding, or introspection.
 
+In simple terms, **Wefter** helps you automate code scaffolding and project workflows:
+
+* **Create custom CLI commands**: Define project-specific commands and subcommands using simple Lua scripts.
+* **Generate files from templates**: Render new code files, components, or boilerplate using dynamic templates (powered by Tera/Jinja2).
+* **Inject code into existing files**: Automatically insert imports, initialization code, or snippets into existing files at specified comment markers (`@wefter.embed`).
+* **Prompt for user input**: Interactively ask for text input or menu selections right in the terminal.
+* **Display rich Markdown in terminal**: Render formatted Markdown in the CLI for documentation, introspection, or command output.
+
 ## Quickstart 🚀
 
 Get up and running with **Wefter** in a few steps by creating a project-local profile:
