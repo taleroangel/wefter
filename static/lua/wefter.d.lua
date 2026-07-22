@@ -196,11 +196,33 @@ function wefter.io.confirm(prompt) end
 --- Render a markdown string into terminal.
 ---
 --- @param content string
----     Some foo bar
+---     Markdown text to be rendered
 --- 
 --- @return nil
 ---     None. terminates program on error, use `pcall` if required.
 function wefter.io.markdown(content) end
+
+--- Print info log message
+--- You can still use lua's builtin `print`, but this function will pretty
+--- print using rust log crate
+---
+--- @param msg string
+---     Message to print
+--- 
+--- @return nil
+---		None
+function wefter.io.info(msg) end
+
+--- Print error log message
+--- You can still use lua's builtin `print`, but this function will pretty
+--- print using rust log crate
+---
+--- @param msg string
+---     Message to print
+--- 
+--- @return nil
+---		None
+function wefter.io.error(msg) end
 
 -- @wefter.embed:io
 

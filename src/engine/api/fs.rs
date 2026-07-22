@@ -43,6 +43,7 @@ pub fn module(l: &Lua, history: HistoryRef) -> Result<WefterModuleTable<'_>> {
         ("mkdir", {
             let history = history.clone();
             l.create_function(move |lua, path: PathBuf| {
+                log::debug!("[wefter.fs.mkdir] Directory={:?}", path);
                 Ok(match fs::create_dir(&path) {
                     Result::Ok(_) => {
                         // Save action in history
@@ -58,6 +59,7 @@ pub fn module(l: &Lua, history: HistoryRef) -> Result<WefterModuleTable<'_>> {
         ("mkfile", {
             let history = history.clone();
             l.create_function(move |lua, path: PathBuf| {
+                log::debug!("[wefter.fs.mkfile] File={:?}", path);
                 Ok(match fs::File::create(&path) {
                     Result::Ok(_) => {
                         // Save action in history
@@ -71,6 +73,7 @@ pub fn module(l: &Lua, history: HistoryRef) -> Result<WefterModuleTable<'_>> {
         ("rename", {
             let history = history.clone();
             l.create_function(move |lua, (file, newname): (PathBuf, String)| {
+                log::debug!("[wefter.fs.rename] File={:?}, Name={}", file, newname);
                 let newfile = file.as_path().with_file_name(newname);
                 Ok(match fs::rename(&file, &newfile) {
                     Result::Ok(_) => {
@@ -88,6 +91,7 @@ pub fn module(l: &Lua, history: HistoryRef) -> Result<WefterModuleTable<'_>> {
         ("move", {
             let history = history.clone();
             l.create_function(move |lua, (file, dir): (PathBuf, PathBuf)| {
+                log::debug!("[wefter.fs.move] File={:?}, Directory={:?}", file, dir);
                 Ok(match wefterfs::utils::move_to_directory(&file, &dir) {
                     Result::Ok(new) => {
                         history.borrow_mut().push(HistoryAction::FileMoved {
@@ -104,6 +108,7 @@ pub fn module(l: &Lua, history: HistoryRef) -> Result<WefterModuleTable<'_>> {
         ("delete", {
             let history = history.clone();
             l.create_function(move |lua, file: PathBuf| {
+                log::debug!("[wefter.fs.delete] File={:?}", file);
                 Ok(match fs::remove_file(&file) {
                     Result::Ok(_) => {
                         // Save action in history
@@ -117,6 +122,7 @@ pub fn module(l: &Lua, history: HistoryRef) -> Result<WefterModuleTable<'_>> {
         ("copy", {
             let history = history.clone();
             l.create_function(move |lua, (src, dst): (PathBuf, PathBuf)| {
+                log::debug!("[wefter.fs.copy] File={:?}, File={:?}", src, dst);
                 Ok(match wefterfs::utils::copy_file(&src, &dst) {
                     Result::Ok(_) => {
                         // Save action in history

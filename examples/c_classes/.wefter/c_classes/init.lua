@@ -1,3 +1,4 @@
+---@type wefter.profile
 return {
 	class = {
 		description = "Command to manipulate classes",
@@ -40,8 +41,6 @@ return {
 
 					-- Name for the .h file
 					local class_file = class_snake_case .. ".h"
-					-- Object file name
-					local object_file = class_snake_case .. ".o"
 					-- Class name in upper camel case (pascal case)
 					local class_name = class_pascal_case
 					-- Variable name in lower camel case

@@ -17,6 +17,7 @@ pub fn module(l: &Lua, tui: Rc<TuiInterface>) -> Result<WefterModuleTable<'_>> {
                 Ok(tui.select(&prompt, &opts)?)
             })?
         }),
+        // Prompt user to choose a number
         ("int", {
             let tui = tui.clone();
             l.create_function(
@@ -25,15 +26,31 @@ pub fn module(l: &Lua, tui: Rc<TuiInterface>) -> Result<WefterModuleTable<'_>> {
                 },
             )?
         }),
+        // y/n prompt
         ("confirm", {
             let tui = tui.clone();
             l.create_function(move |_, prompt: String| {
                 Ok(tui.confirm(&prompt))
             })?
         }),
+        // render markdown
         ("markdown", {
             let tui = tui.clone();
             l.create_function(move |_, content: String| Ok(tui.print_markdown(content)))?
+        }),
+        // log info
+        ("info", {
+            l.create_function(move |_, msg: String| {
+                log::info!("{}", msg);
+                Ok(())
+            })?
+        }),
+        // log error
+        ("error", {
+            l.create_function(move |_, msg: String| {
+                log::error!("{}", msg);
+                Ok(())
+            })?
         }),
         /* @wefter.embed:io */
     ])

@@ -18,7 +18,7 @@ return {
 					-- Modules names are stored here
 					local entries = {}
 					for _, entry in ipairs(dir) do
-						local filename = entry:match("([^/]+)%.rs$")
+						local filename = entry:match("([^/^\\]+)%.rs$")
 						if filename ~= "mod" then
 							table.insert(entries, filename)
 						end
@@ -97,6 +97,7 @@ return {
 			},
 			--- List all of the API entries
 			list = {
+				description = "List all API modules",
 				exec = function()
 					-- Read modules in API directory
 					local dir, err = wefter.fs.read_dir("src/engine/api");
@@ -119,8 +120,6 @@ return {
 
 					-- Render markdown to screen
 					wefter.io.markdown(template)
-
-					wefter.template.create("foo/bar/destination.rs", "api/api.rs", { module = "foo", name = "bar" })
 				end
 			}
 		},
