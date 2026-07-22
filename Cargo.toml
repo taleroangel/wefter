@@ -1,6 +1,6 @@
 [package]
 name = "wefter"
-version = "0.2.2-beta"
+version = "0.2.4-beta"
 authors = ["taleroangel <angelgotalero@outlook.com>"]
 edition = "2024"
 description = "Fully-customizable automation runtime using Lua"
@@ -10,7 +10,6 @@ readme = "README.md"
 
 exclude = [
 	".wefter/",
-	".cargo/",
 	".nvim.lua",
 	".luarc.json",
 	"examples",

@@ -3,9 +3,9 @@ use anyhow::Result;
 use directories::ProjectDirs;
 use std::{env, fs, path::PathBuf};
 
-const APP_QUALIFIER: &str = env!("WEFTER_PRJ_QUALIFIER");
-const APP_ORGANIZATION: &str = env!("WEFTER_PRJ_ORG");
-const APP_NAME: &str = env!("WEFTER_PRJ_NAME");
+const APP_QUALIFIER: &str = "dev";
+const APP_ORGANIZATION: &str = "taleroangel";
+const APP_NAME: &str = "wefter";
 
 /// Directories configuration, contains paths to all the directories
 /// wefter requires to load templates

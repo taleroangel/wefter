@@ -18,7 +18,7 @@ Get up and running with **Wefter** in a few steps by creating a project-local pr
 Install Wefter directly from [crates.io](https://crates.io/crates/wefter):
 
 ```bash
-cargo install wefter
+cargo install wefter --version 0.2.4-beta
 ```
 
 Or install from source:
