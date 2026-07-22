@@ -31,3 +31,21 @@ pub fn move_to_directory(file: &PathBuf, dir: &PathBuf) -> Result<PathBuf> {
     // Return the new path
     Ok(newfile)
 }
+
+/// Copy `source` into `destination`
+/// Unlike [std::fs::copy] this function will fail if `destination` does not
+/// exist or if `destination` and `source` are the same
+pub fn copy_file(source: &PathBuf, destination: &PathBuf) -> Result<()> {
+    // Check if destination exists
+    if destination.is_file() {
+        return Err(io::Error::new(io::ErrorKind::AlreadyExists, "Destination file already exists").into())
+    }
+
+    // Check if both are the same
+    if destination == source {
+    }
+
+    // Copy file
+    fs::copy(source, destination)?;
+    Ok(())
+}

@@ -48,7 +48,7 @@ pub fn module(l: &Lua, profile: ResourceDir, history: HistoryRef) -> Result<Weft
 
                     // Create file
                     fs::write(dst.clone(), rendered)?;
-                    history.borrow_mut().push(HistoryAction::CreateFile(dst));
+                    history.borrow_mut().push(HistoryAction::FileCreated(dst));
 
                     Ok(())
                 },
@@ -76,7 +76,7 @@ pub fn module(l: &Lua, profile: ResourceDir, history: HistoryRef) -> Result<Weft
 
                     // Create file
                     fs::write(dst.clone(), rendered)?;
-                    history.borrow_mut().push(HistoryAction::CreateFile(dst));
+                    history.borrow_mut().push(HistoryAction::FileCreated(dst));
 
                     Ok(())
                 },
@@ -112,7 +112,7 @@ pub fn module(l: &Lua, profile: ResourceDir, history: HistoryRef) -> Result<Weft
                     templates::embed_file(dst.clone(), lookup.clone(), template, params)?;
                     history
                         .borrow_mut()
-                        .push(HistoryAction::ModifyFile(dst, lookup));
+                        .push(HistoryAction::FileModified(dst, lookup));
 
                     Ok(())
                 },
@@ -145,7 +145,7 @@ pub fn module(l: &Lua, profile: ResourceDir, history: HistoryRef) -> Result<Weft
                     templates::embed_inline(dst.clone(), lookup.clone(), template_str, params)?;
                     history
                         .borrow_mut()
-                        .push(HistoryAction::ModifyFile(dst, lookup));
+                        .push(HistoryAction::FileModified(dst, lookup));
 
                     Ok(())
                 },

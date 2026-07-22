@@ -1,3 +1,4 @@
+---@type wefter.profile
 return {
 	--- Commands related to the Wefter API
 	api = {

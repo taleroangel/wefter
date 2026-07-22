@@ -1,6 +1,4 @@
---- @meta
-
--- ### Constants ## --
+--- @meta wefter
 
 --- Wefter version string.
 --- @type string
@@ -12,14 +10,20 @@ WEFTER_VERSION = ""
 --- @readonly
 WEFTER_PROJECT_ROOT = ""
 
+--- @class (exact) wefter.profile.command Command hierarchy for Wefter profile
+--- @field description string Command description
+---	@field subcommand? table<string, wefter.profile.command> Nested subcommands
+---	@field exec? function Function to execute when the command is called
+
+--- @alias wefter.profile table<string, wefter.profile.command>
+---		`init.lua` Wefter profile definition
+
 --- Main Wefter API namespace exposed by the embedded Lua runtime.
 ---
 --- This table is provided by the host Rust runtime and exists
 --- at runtime without being required or imported.
 --- @class wefter
 wefter = {}
-
--- ### FileSystem ### --
 
 --- Filesystem utilities. (early-loading)
 --- This module is available during `auto.lua` and `init.lua` parsing
@@ -92,7 +96,9 @@ function wefter.fs.mkfile(path) end
 ---		Absolute or relative (to project root) path to the file to be renamed
 ---
 --- @param newname string
----		New filename (including extension). Just the filename, this function will leave the file in the same directory it is already in, do not use this function to move files around, use `fs.move` instead.
+---		New filename (including extension). Just the filename, this function will
+---		leave the file in the same directory it is already in.
+---		Do not use this function to move files around, use `fs.move` instead.
 ---
 --- @return string|nil
 ---     Path to the renamed file
@@ -112,11 +118,31 @@ function wefter.fs.rename(file, newname) end
 ---     New path to the file
 --- @return string|nil
 ---     IO Error, target directory does not exist?
-function wefter.fs.rename(file, dir) end
+function wefter.fs.move(file, dir) end
+
+--- Delete a file
+---
+--- @param file string
+---		Absolute or relative (to project root) path to the file to be deleted
+---
+--- @return string|nil
+---     IO Error, target directory does not exist?
+function wefter.fs.delete(file) end
+
+--- Copy a file into a new path.
+--- Operation will fail if the target file already exists
+---
+--- @param src string
+---		Absolute or relative (to project root) path to the file to be copied
+---
+--- @param dst string
+---		Absolute or relative (to project root) path to the new copy file
+---
+--- @return string|nil
+---     IO Error, source does not exist or dst already exist?
+function wefter.fs.copy(src, dst) end
 
 -- @wefter.embed:fs
-
--- ### I/O ### --
 
 --- TUI related I/O.
 --- @class wefter.io
@@ -177,8 +203,6 @@ function wefter.io.confirm(prompt) end
 function wefter.io.markdown(content) end
 
 -- @wefter.embed:io
-
--- ### Templates ### --
 
 --- Templating system API.
 --- @class wefter.template

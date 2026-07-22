@@ -48,7 +48,7 @@ pub fn module(l: &Lua, history: HistoryRef) -> Result<WefterModuleTable<'_>> {
                         // Save action in history
                         history
                             .borrow_mut()
-                            .push(HistoryAction::CreateDirectory(path));
+                            .push(HistoryAction::DirectoryCreated(path));
                         Value::Nil
                     }
                     Result::Err(err) => err.to_string().into_lua(lua)?,
@@ -61,7 +61,7 @@ pub fn module(l: &Lua, history: HistoryRef) -> Result<WefterModuleTable<'_>> {
                 Ok(match fs::File::create(&path) {
                     Result::Ok(_) => {
                         // Save action in history
-                        history.borrow_mut().push(HistoryAction::CreateFile(path));
+                        history.borrow_mut().push(HistoryAction::FileCreated(path));
                         Value::Nil
                     }
                     Result::Err(err) => err.to_string().into_lua(lua)?,
@@ -86,6 +86,7 @@ pub fn module(l: &Lua, history: HistoryRef) -> Result<WefterModuleTable<'_>> {
             })?
         }),
         ("move", {
+            let history = history.clone();
             l.create_function(move |lua, (file, dir): (PathBuf, PathBuf)| {
                 Ok(match wefterfs::utils::move_to_directory(&file, &dir) {
                     Result::Ok(new) => {
@@ -97,6 +98,37 @@ pub fn module(l: &Lua, history: HistoryRef) -> Result<WefterModuleTable<'_>> {
                         (new.into_lua(lua)?, Value::Nil)
                     }
                     Result::Err(err) => (Value::Nil, err.to_string().into_lua(lua)?),
+                })
+            })?
+        }),
+        ("delete", {
+            let history = history.clone();
+            l.create_function(move |lua, file: PathBuf| {
+                Ok(match fs::remove_file(&file) {
+                    Result::Ok(_) => {
+                        // Save action in history
+                        history.borrow_mut().push(HistoryAction::FileDeleted(file));
+                        Value::Nil
+                    }
+                    Result::Err(err) => err.to_string().into_lua(lua)?,
+                })
+            })?
+        }),
+        ("copy", {
+            let history = history.clone();
+            l.create_function(move |lua, (src, dst): (PathBuf, PathBuf)| {
+                Ok(match wefterfs::utils::copy_file(&src, &dst) {
+                    Result::Ok(_) => {
+                        // Save action in history
+                        history
+                            .borrow_mut()
+                            .push(HistoryAction::FileCreated(dst.clone()));
+                        history
+                            .borrow_mut()
+                            .push(HistoryAction::FileCopied { src: src, dst: dst });
+                        Value::Nil
+                    }
+                    Result::Err(err) => err.to_string().into_lua(lua)?,
                 })
             })?
         }),
