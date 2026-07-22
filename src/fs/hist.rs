@@ -11,10 +11,10 @@ pub enum HistoryAction {
     /// Path to the directory created
     CreateDirectory(PathBuf),
 
-    /// [previous] file was renamed and now is [new]
+    /// `previous` file was renamed and now is `new`
     FileRenamed { previous: PathBuf, new: PathBuf },
 
-    /// [previous] file was moved and now lives at [new]
+    /// `previous` file was moved and now lives at `new`
     FileMoved{ previous: PathBuf, new: PathBuf },
 }
 
