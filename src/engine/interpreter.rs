@@ -55,25 +55,37 @@ impl LuaInterpreter {
             let mut file = path.clone();
             let filename = name.replace(".", "/") + ".lua";
             file.push(filename);
+            log::trace!("Lua module lookup for '{:?}'", file);
 
             // Module as directory init.lua (foo/init.lua)
             let mut dir = path.clone();
             let dirname = name.replace(".", "/") + "/init.lua";
             dir.push(dirname);
+            log::trace!("Lua module lookup for '{:?}'", dir);
 
-            if !file.is_file() || !dir.is_file() {
+            if !file.is_file() && !dir.is_file() {
                 return Result::Err(mlua::Error::runtime(format!(
                     "Could not find module entrypoint {:?}, {:?}",
                     file, dir
                 )));
             }
 
-            let source = fs::read_to_string(if file.is_file() { file } else { dir })?;
+            let source = fs::read_to_string(if file.is_file() {
+                log::debug!("Sourcing '{:?}'", file);
+                file
+            } else {
+                log::debug!("Sourcing '{:?}'", dir);
+                dir
+            })?;
             let module = lua.load(source).set_name(name).into_function()?;
 
             Result::Ok(mlua::Value::Function(module))
         })?;
 
+        log::trace!(
+            "Registered custom module loader for path: '{:?}'",
+            &profile.path
+        );
         searchers.raw_insert(1, loader)?;
         Ok(())
     }
@@ -156,6 +168,14 @@ impl LuaInterpreter {
 
     /// Run a configuration file
     pub fn run_init(&mut self, res: &ResourceDir) -> Result<def::ProfileDef> {
+        // Check if interpeter has been initialized
+        if !self.api_registered {
+            return Err(WefterErr::ApplicationError(
+                "Cannot exec profile 'init.lua' without interpreter initialization".to_string(),
+            )
+            .into());
+        }
+
         // Check if file exists
         if !res.init.is_file() {
             return Err(WefterErr::NoSuchLuaFile(res.init.clone()).into());

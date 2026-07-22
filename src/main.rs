@@ -83,7 +83,7 @@ fn try_main() -> Result<()> {
             .get_key_value(key)
             .ok_or_else(|| WefterErr::UnknownProfile(key.clone()))
     } else {
-        // Uset auto.lua
+        // Use auto.lua
         let auto = lua.run_auto(&resources)?;
         log::trace!("Valid auto profiles: {:?}", &auto);
 
@@ -113,6 +113,9 @@ fn try_main() -> Result<()> {
 
     log::debug!("Using profile: {:?}", &profile);
 
+    // Initialize the wefter API once the profile has been loaded
+    lua.init(&profile.1, ui.clone())?;
+
     // Load profile definition
     let pdef: engine::ProfileDef = lua.run_init(&profile.1)?;
     log::info!("Successfully loaded profile definition: {:?}", profile.0);
@@ -123,9 +126,6 @@ fn try_main() -> Result<()> {
         ui.print_profile(profile.0, &pdef);
         return Ok(());
     }
-
-    // Initialize the wefter API once the profile has been loaded
-    lua.init(profile.1, ui.clone())?;
 
     // Execute command
     match lua.exec_command(params.trailing, &pdef) {
